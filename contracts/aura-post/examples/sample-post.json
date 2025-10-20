@@ -1,0 +1,23 @@
+{
+  "name": "Aura: Reinventing Signal Bridges",
+  "description": "Token-bound accounts reframe cross-network messaging without adding protocol drag.",
+  "content": {
+    "title": "Reinventing Signal Bridges",
+    "body": "# Reinventing Signal Bridges\n\nCross-network messaging still relies on heavyweight relayers and trust assumptions. Token-bound accounts give us a composable slot to authenticate state shifts without running a validator zoo.\n\n## A Minimal Shape\n- Assign a deterministic account per post.\n- Cache attestations client-side.\n- Defer heavyweight infra until behaviour is proven.\n\n## Why It Matters\nLatency is product-critical. Practical heuristics—like the personalization toggle we ship in Phase 1—are the best way to measure perceived usefulness before launching the on-chain indexer.",
+    "summary": "Token-bound accounts let us rebuild bridges with less trust and more composability.",
+    "tags": ["bridges", "token-bound-accounts", "heuristics"],
+    "createdAt": "2024-10-18T15:32:00.000Z"
+  },
+  "media": [
+    {
+      "mimeType": "image/jpeg",
+      "uri": "https://images.unsplash.com/photo-1518770660439-4636190af475",
+      "title": "Network bridges at dusk"
+    }
+  ],
+  "external_url": "https://aura.example/posts/reinventing-signal-bridges",
+  "attributes": [
+    { "trait_type": "Module", "value": "Curator" },
+    { "trait_type": "Phase", "value": "Phase 2" }
+  ]
+}
