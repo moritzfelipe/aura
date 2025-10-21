@@ -8,10 +8,11 @@ import styles from "@/features/feed/feed.module.css";
 
 type FeedViewProps = {
   initialPosts: FeedPost[];
+  initialExpandedId?: string;
 };
 
-export function FeedView({ initialPosts }: FeedViewProps) {
-  const { posts, onTip, isPersonalized, togglePersonalized, hasTipped } =
+export function FeedView({ initialPosts, initialExpandedId }: FeedViewProps) {
+  const { posts, onTip, isPersonalized, togglePersonalized, hasTipped, getTip } =
     usePersonalizedFeed(initialPosts);
 
   return (
@@ -20,9 +21,9 @@ export function FeedView({ initialPosts }: FeedViewProps) {
         <div>
           <h2 className={styles.feedTitle}>Discovery Feed</h2>
           <p className={styles.feedSubtitle}>
-            Live posts pulled from the AuraPost contract on Sepolia. Tip to
-            surface favourites locally while we keep iterating on the
-            personalization loop.
+            Live posts pulled from the AuraPost contract on Sepolia. Expand any
+            post to read it inline and simulate a tip in USD (we handle the rough
+            ETH conversion locally).
           </p>
         </div>
         <PersonalizedToggle
@@ -30,7 +31,13 @@ export function FeedView({ initialPosts }: FeedViewProps) {
           onToggle={togglePersonalized}
         />
       </div>
-      <PostList posts={posts} onTip={onTip} hasTipped={hasTipped} />
+      <PostList
+        posts={posts}
+        onTip={onTip}
+        hasTipped={hasTipped}
+        getTip={getTip}
+        initialExpandedId={initialExpandedId}
+      />
     </section>
   );
 }

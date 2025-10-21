@@ -1,19 +1,19 @@
 # Post Detail Feature
 
-The post detail feature powers the `/post/[id]` route. It renders on-chain Aura posts (fetched via `getAuraPosts()`) and keeps the local tipping loop.
+The post detail feature powers the `/post/[id]` route. It now reuses the same inline timeline experience as the home feed, automatically expanding the requested post inside the stream so readers never leave context.
 
 ## Structure
 
-- `components/PostDetailView.tsx` – Client component that orchestrates the layout, renders markdown, and handles tipping.
-- `post-detail.module.css` – Styles scoped to the detail view.
+- `app/post/[id]/page.tsx` – Server component that loads Aura posts via `getAuraPosts()` and renders the shared `FeedView` with the requested `tokenId` pre-expanded.
+- Shared UI and tipping interactions live alongside the feed feature (`features/feed/components/PostList.tsx`, `TipButton.tsx`).
 
-## Data Flow
+## Behaviour
 
-1. The route loader (`app/post/[id]/page.tsx`) calls `getAuraPosts()` to fetch the current list of minted posts, selects the requested token ID, and passes the rest as related entries.
-2. `PostDetailView` hydrates a local tip counter and reuses `useLocalStorageTips()` to keep personalization state aligned with the feed.
-3. The markdown body is rendered with `react-markdown` so post metadata authored in IPFS JSON shows up nicely.
-4. The "On-chain Details" section exposes the token URI (gateway link) and `contentHash` alongside wallet metadata.
+1. The route fetches the full post list, verifies the requested `tokenId` exists, and passes it to `FeedView` through the `initialExpandedId` prop.
+2. `FeedView` hydrates client state (personalization + tipping) and renders the same timeline used on `/`, with the target post opened in place.
+3. Collapsing the post returns to the compact card view; tipping and personalization remain fully local just like the homepage.
 
 ## Editing Tips
 
-Tip counts remain optimistic and purely local during Phase 2. Refreshing the page resets them to zero (unless already tipped in the current browser). We'll hook into real on-chain signals in Phase 3.
+- Keep permalink-specific logic minimal inside `app/post/[id]/page.tsx`; any UI changes should be implemented in the feed components so both routes stay in sync.
+- When adding new detail affordances (e.g., share CTA, comments), wire them into the timeline item so the inline experience remains consistent everywhere.

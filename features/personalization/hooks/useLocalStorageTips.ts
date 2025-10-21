@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { PersonalizedState } from "@/features/feed/types";
+import type { PersonalizedState, PersonalizedTip } from "@/features/feed/types";
 
-const STORAGE_KEY = "aura-personalization-v1";
+const STORAGE_KEY = "aura-personalization-v2";
 
 const defaultState: PersonalizedState = {
-  tippedPostIds: [],
+  tips: [],
   lastUpdated: new Date(0).toISOString()
 };
 
@@ -22,6 +22,35 @@ function persistState(state: PersonalizedState) {
   }
 }
 
+function migrateState(raw: unknown): PersonalizedState {
+  if (!raw || typeof raw !== "object") {
+    return defaultState;
+  }
+
+  const maybeLegacy = raw as { tippedPostIds?: unknown; lastUpdated?: unknown };
+  if (Array.isArray(maybeLegacy.tippedPostIds)) {
+    const tips: PersonalizedTip[] = maybeLegacy.tippedPostIds
+      .filter((value): value is string => typeof value === "string")
+      .map((postId) => ({
+        postId,
+        totalTips: 1,
+        lastAmountUsd: 0.01,
+        lastNote: undefined,
+        lastUpdated: new Date().toISOString()
+      }));
+
+    return {
+      tips,
+      lastUpdated:
+        typeof maybeLegacy.lastUpdated === "string"
+          ? maybeLegacy.lastUpdated
+          : new Date().toISOString()
+    };
+  }
+
+  return defaultState;
+}
+
 function hydrateState(): PersonalizedState {
   if (typeof window === "undefined") {
     return defaultState;
@@ -30,20 +59,52 @@ function hydrateState(): PersonalizedState {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
+      const legacyRaw = window.localStorage.getItem("aura-personalization-v1");
+      if (!legacyRaw) {
+        return defaultState;
+      }
+
+      const legacyParsed = JSON.parse(legacyRaw) as unknown;
+      const migrated = migrateState(legacyParsed);
+      persistState(migrated);
+      try {
+        window.localStorage.removeItem("aura-personalization-v1");
+      } catch {
+        // ignore removal errors
+      }
+      return migrated;
+    }
+
+    const parsed = JSON.parse(raw) as PersonalizedState | Record<string, unknown>;
+    if (!parsed) {
       return defaultState;
     }
 
-    const parsed = JSON.parse(raw) as Partial<PersonalizedState>;
-    if (!parsed || !Array.isArray(parsed.tippedPostIds)) {
-      return defaultState;
+    if ("tips" in parsed && Array.isArray(parsed.tips)) {
+      return {
+        tips: parsed.tips
+          .map((tip) => ({
+            postId: tip.postId,
+            totalTips: tip.totalTips,
+            lastAmountUsd: tip.lastAmountUsd,
+            lastNote: tip.lastNote,
+            lastUpdated: tip.lastUpdated
+          }))
+          .filter(
+            (tip): tip is PersonalizedTip =>
+              typeof tip.postId === "string" &&
+              typeof tip.totalTips === "number" &&
+              typeof tip.lastAmountUsd === "number" &&
+              typeof tip.lastUpdated === "string"
+          ),
+        lastUpdated:
+          typeof parsed.lastUpdated === "string"
+            ? parsed.lastUpdated
+            : new Date().toISOString()
+      };
     }
 
-    return {
-      tippedPostIds: parsed.tippedPostIds.filter(
-        (value): value is string => typeof value === "string"
-      ),
-      lastUpdated: parsed.lastUpdated ?? new Date().toISOString()
-    };
+    return migrateState(parsed);
   } catch (error) {
     console.warn("Failed to read personalization data", error);
     return defaultState;
@@ -57,37 +118,70 @@ export function useLocalStorageTips() {
     setState(hydrateState());
   }, []);
 
-  const registerTip = useCallback((postId: string) => {
+  const registerTip = useCallback((postId: string, amountUsd: number, note?: string) => {
     setState((current) => {
       const updatedAt = new Date().toISOString();
-      if (current.tippedPostIds.includes(postId)) {
-        const nextState = { ...current, lastUpdated: updatedAt };
-        persistState(nextState);
-        return nextState;
+      const existingIndex = current.tips.findIndex((tip) => tip.postId === postId);
+      let nextTips: PersonalizedTip[];
+
+      if (existingIndex >= 0) {
+        nextTips = current.tips.map((tip, index) =>
+          index === existingIndex
+            ? {
+                ...tip,
+                totalTips: tip.totalTips + 1,
+                lastAmountUsd: amountUsd,
+                lastNote: note,
+                lastUpdated: updatedAt
+              }
+            : tip
+        );
+      } else {
+        nextTips = [
+          ...current.tips,
+          {
+            postId,
+            totalTips: 1,
+            lastAmountUsd: amountUsd,
+            lastNote: note,
+            lastUpdated: updatedAt
+          }
+        ];
       }
 
       const nextState: PersonalizedState = {
-        tippedPostIds: [...current.tippedPostIds, postId],
+        tips: nextTips,
         lastUpdated: updatedAt
       };
+
       persistState(nextState);
       return nextState;
     });
   }, []);
 
-  const tippedSet = useMemo(
-    () => new Set(state.tippedPostIds),
-    [state.tippedPostIds]
-  );
+  const tipsByPost = useMemo(() => {
+    return state.tips.reduce<Record<string, PersonalizedTip>>((acc, tip) => {
+      acc[tip.postId] = tip;
+      return acc;
+    }, {});
+  }, [state.tips]);
+
+  const tippedPostIds = useMemo(() => state.tips.map((tip) => tip.postId), [state.tips]);
 
   const hasTipped = useCallback(
-    (postId: string) => tippedSet.has(postId),
-    [tippedSet]
+    (postId: string) => Boolean(tipsByPost[postId]),
+    [tipsByPost]
+  );
+
+  const getTip = useCallback(
+    (postId: string) => tipsByPost[postId],
+    [tipsByPost]
   );
 
   return {
-    tippedPostIds: state.tippedPostIds,
+    tippedPostIds,
     registerTip,
-    hasTipped
+    hasTipped,
+    getTip
   };
 }

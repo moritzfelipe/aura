@@ -25,18 +25,7 @@
   max-width: 520px;
   color: rgba(255, 255, 255, 0.72);
   line-height: 1.5;
-}
-
-.postGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.emptyState {
-  padding: 48px;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.95rem;
 }
 
 @media (max-width: 720px) {

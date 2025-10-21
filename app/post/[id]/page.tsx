@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getAuraPosts } from "@/features/feed/data/getAuraPosts";
-import { PostDetailView } from "@/features/post-detail/components/PostDetailView";
+import { FeedView } from "@/features/feed/components/FeedView";
 import type { FeedPost } from "@/features/feed/types";
 
 type PostPageParams = {
@@ -19,16 +19,11 @@ export default async function PostPage({ params }: { params: PostPageParams }) {
     notFound();
   }
 
-  const post = posts.find((item) => item.id === params.id);
+  const postExists = posts.some((item) => item.id === params.id);
 
-  if (!post) {
+  if (!postExists) {
     notFound();
   }
 
-  return (
-    <PostDetailView
-      post={post}
-      relatedPosts={posts.filter((item) => item.id !== post.id)}
-    />
-  );
+  return <FeedView initialPosts={posts} initialExpandedId={params.id} />;
 }

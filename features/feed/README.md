@@ -4,19 +4,20 @@ Phase 2 swaps the local JSON dataset for real posts minted through the AuraPost 
 
 ## Structure
 
-- `components/FeedView.tsx` – Client wrapper that wires personalization, renders controls, and delegates rendering to the list.
-- `components/PostList.tsx` – Grid list of post cards with tipping affordances.
-- `post-card.module.css` / `feed.module.css` – Styles scoped to the feed components.
+- `components/FeedView.tsx` – Client wrapper that wires personalization, renders the header controls, and delegates to the timeline renderer.
+- `components/PostList.tsx` – Single-column timeline that supports inline expansion, media previews, and the refreshed tip composer.
+- `timeline.module.css` / `feed.module.css` – Styles scoped to the timeline and header controls.
 - `hooks/usePersonalizedFeed.ts` – Client hook that maintains post state, applies personalization order, and handles tip side-effects.
 - `data/getAuraPosts.ts` – Server helper that reads on-chain data with `viem` and dereferences metadata from IPFS.
-- `types.ts` – Shared types for posts and personalization metadata.
+- `types.ts` – Shared types for posts, tipping payloads, and personalization metadata.
 
 ## Behaviour
 
 1. `getAuraPosts()` connects to the configured `AURA_POST_ADDRESS`, fetches `totalSupply`, and loops through each token ID.
 2. For every token it reads `ownerOf`, `tokenURI`, and `contentHashOf`, downloads the metadata JSON (via IPFS gateway), and normalises it into the `FeedPost` shape.
-3. `FeedView` bootstraps the `usePersonalizedFeed` hook with that list and renders the personalization toggle.
-4. Tipping updates the local list immediately and registers the post in `localStorage` for future sessions. Ordering favours items you tipped when personalization is enabled.
+3. `FeedView` bootstraps `usePersonalizedFeed` with that list, renders the personalization toggle, and hands control to `PostList`.
+4. `PostList` renders each post as a compact card; clicking expands it inline with full markdown, on-chain metadata, and the image preview.
+5. The refreshed `TipButton` opens an inline composer with a default `$0.01` USD amount, a rough ETH conversion, and an optional note. Tipping updates local storage, increments the visible total, and influences personalized ordering.
 
 ## Configuration
 

@@ -141,7 +141,6 @@ function normalizePost(params: {
     body,
     creatorAddress: owner,
     tips: 0,
-    tbaAddress: null,
     createdAt: createdAt,
     coverImageUrl,
     tags,

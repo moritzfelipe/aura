@@ -1,15 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { FeedPost } from "@/features/feed/types";
+import type { FeedPost, TipInput, PersonalizedTip } from "@/features/feed/types";
 import { useLocalStorageTips } from "@/features/personalization/hooks/useLocalStorageTips";
 
 type UsePersonalizedFeedResult = {
   posts: FeedPost[];
-  onTip: (postId: string) => void;
+  onTip: (input: TipInput) => void;
   isPersonalized: boolean;
   togglePersonalized: () => void;
   hasTipped: (postId: string) => boolean;
+  getTip: (postId: string) => PersonalizedTip | undefined;
 };
 
 export function usePersonalizedFeed(initialPosts: FeedPost[]): UsePersonalizedFeedResult {
@@ -17,30 +18,37 @@ export function usePersonalizedFeed(initialPosts: FeedPost[]): UsePersonalizedFe
     initialPosts.map((post) => ({ ...post }))
   );
   const [isPersonalized, setIsPersonalized] = useState(false);
-  const { tippedPostIds, registerTip, hasTipped } = useLocalStorageTips();
+  const { tippedPostIds, registerTip, hasTipped, getTip } = useLocalStorageTips();
 
   useEffect(() => {
     setPosts(
-      initialPosts.map((post) => ({
-        ...post,
-        tips: tippedPostIds.includes(post.id) ? post.tips + 1 : post.tips
-      }))
+      initialPosts.map((post) => {
+        const tip = getTip(post.id);
+        return {
+          ...post,
+          tips: (tip?.totalTips ?? 0) + post.tips,
+          lastTipUsd: tip?.lastAmountUsd ?? post.lastTipUsd,
+          lastTipNote: tip?.lastNote ?? post.lastTipNote
+        };
+      })
     );
-  }, [initialPosts, tippedPostIds]);
+  }, [initialPosts, tippedPostIds, getTip]);
 
   const handleTip = useCallback(
-    (postId: string) => {
+    ({ postId, amountUsd, note }: TipInput) => {
       setPosts((current) =>
         current.map((post) =>
           post.id === postId
             ? {
                 ...post,
-                tips: post.tips + 1
+                tips: post.tips + 1,
+                lastTipUsd: amountUsd,
+                lastTipNote: note
               }
             : post
         )
       );
-      registerTip(postId);
+      registerTip(postId, amountUsd, note);
     },
     [registerTip]
   );
@@ -74,6 +82,7 @@ export function usePersonalizedFeed(initialPosts: FeedPost[]): UsePersonalizedFe
     onTip: handleTip,
     isPersonalized,
     togglePersonalized,
-    hasTipped
+    hasTipped,
+    getTip
   };
 }
