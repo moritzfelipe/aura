@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import type { MockPost } from "@/features/feed/types";
+import type { FeedPost } from "@/features/feed/types";
 import { TipButton } from "@/features/shared/components/TipButton";
 import { PostMeta } from "@/features/shared/components/PostMeta";
 import styles from "@/features/feed/feed.module.css";
 import cardStyles from "@/features/feed/post-card.module.css";
 
 type PostListProps = {
-  posts: MockPost[];
+  posts: FeedPost[];
   onTip: (postId: string) => void;
   hasTipped: (postId: string) => boolean;
 };
@@ -18,7 +18,7 @@ export function PostList({ posts, onTip, hasTipped }: PostListProps) {
     return (
       <div className={`surface ${styles.emptyState}`}>
         <h3>No posts yet</h3>
-        <p>Seed the dataset in `data/db.json` to populate the feed.</p>
+        <p>Mint a post via AuraPost.publish to populate the feed.</p>
       </div>
     );
   }

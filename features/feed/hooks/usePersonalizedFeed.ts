@@ -1,19 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { MockPost } from "@/features/feed/types";
+import type { FeedPost } from "@/features/feed/types";
 import { useLocalStorageTips } from "@/features/personalization/hooks/useLocalStorageTips";
 
 type UsePersonalizedFeedResult = {
-  posts: MockPost[];
+  posts: FeedPost[];
   onTip: (postId: string) => void;
   isPersonalized: boolean;
   togglePersonalized: () => void;
   hasTipped: (postId: string) => boolean;
 };
 
-export function usePersonalizedFeed(initialPosts: MockPost[]): UsePersonalizedFeedResult {
-  const [posts, setPosts] = useState<MockPost[]>(() =>
+export function usePersonalizedFeed(initialPosts: FeedPost[]): UsePersonalizedFeedResult {
+  const [posts, setPosts] = useState<FeedPost[]>(() =>
     initialPosts.map((post) => ({ ...post }))
   );
   const [isPersonalized, setIsPersonalized] = useState(false);

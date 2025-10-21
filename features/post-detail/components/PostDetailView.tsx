@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import type { MockPost } from "@/features/feed/types";
+import type { FeedPost } from "@/features/feed/types";
 import { TipButton } from "@/features/shared/components/TipButton";
 import { PostMeta } from "@/features/shared/components/PostMeta";
 import { useLocalStorageTips } from "@/features/personalization/hooks/useLocalStorageTips";
 import styles from "@/features/post-detail/post-detail.module.css";
 
 type PostDetailViewProps = {
-  post: MockPost;
-  relatedPosts: MockPost[];
+  post: FeedPost;
+  relatedPosts: FeedPost[];
 };
 
 const formatDate = (value: string) =>
@@ -20,9 +20,20 @@ const formatDate = (value: string) =>
     timeStyle: "short"
   }).format(new Date(value));
 
+const resolveTokenUri = (uri: string) => {
+  if (uri.startsWith("ipfs://")) {
+    const cid = uri.replace("ipfs://", "");
+    const gateway =
+      process.env.NEXT_PUBLIC_AURA_IPFS_GATEWAY ?? "https://ipfs.io/ipfs/";
+    return `${gateway}${cid}`;
+  }
+  return uri;
+};
+
 export function PostDetailView({ post, relatedPosts }: PostDetailViewProps) {
   const { registerTip, hasTipped } = useLocalStorageTips();
   const [tipCount, setTipCount] = useState(post.tips);
+  const resolvedTokenUri = resolveTokenUri(post.tokenUri);
 
   const sortedRelated = useMemo(
     () =>
@@ -59,6 +70,7 @@ export function PostDetailView({ post, relatedPosts }: PostDetailViewProps) {
             <span className={styles.timestamp}>
               Published {formatDate(post.createdAt)}
             </span>
+            <span className={styles.tokenBadge}>Token #{post.tokenId}</span>
             <PostMeta
               creatorAddress={post.creatorAddress}
               tbaAddress={post.tbaAddress}
@@ -78,6 +90,23 @@ export function PostDetailView({ post, relatedPosts }: PostDetailViewProps) {
         ) : null}
         <div className={styles.body}>
           <ReactMarkdown>{post.body}</ReactMarkdown>
+        </div>
+        <div className={styles.onchainInfo}>
+          <h2>On-chain Details</h2>
+          <dl>
+            <div>
+              <dt>Token URI</dt>
+              <dd>
+                <a href={resolvedTokenUri} target="_blank" rel="noreferrer">
+                  View metadata
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt>Content Hash</dt>
+              <dd className={styles.hashValue}>{post.contentHash}</dd>
+            </div>
+          </dl>
         </div>
       </article>
       {sortedRelated.length ? (

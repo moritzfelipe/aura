@@ -1,6 +1,6 @@
 # Feed Feature
 
-Phase 1 focuses on a local-first mock of the curator feed. This directory groups the React components, hooks, and data helpers that back the `/` route.
+Phase 2 swaps the local JSON dataset for real posts minted through the AuraPost contract. This directory groups the React components, hooks, and data helpers that back the `/` route.
 
 ## Structure
 
@@ -8,33 +8,23 @@ Phase 1 focuses on a local-first mock of the curator feed. This directory groups
 - `components/PostList.tsx` – Grid list of post cards with tipping affordances.
 - `post-card.module.css` / `feed.module.css` – Styles scoped to the feed components.
 - `hooks/usePersonalizedFeed.ts` – Client hook that maintains post state, applies personalization order, and handles tip side-effects.
-- `data/getMockPosts.ts` – Server helper that loads and normalizes the local JSON dataset.
+- `data/getAuraPosts.ts` – Server helper that reads on-chain data with `viem` and dereferences metadata from IPFS.
 - `types.ts` – Shared types for posts and personalization metadata.
 
 ## Behaviour
 
-1. `getMockPosts()` reads `data/db.json`, normalizes timestamps, and returns posts sorted by recency.
-2. `FeedView` bootstraps the `usePersonalizedFeed` hook with that list and renders the personalization toggle.
-3. Tipping updates the local list immediately and registers the post in `localStorage` for future sessions.
-4. When personalization is enabled, the hook reorders posts so tipped entries float to the top (ties resolved by tip count then recency).
+1. `getAuraPosts()` connects to the configured `AURA_POST_ADDRESS`, fetches `totalSupply`, and loops through each token ID.
+2. For every token it reads `ownerOf`, `tokenURI`, and `contentHashOf`, downloads the metadata JSON (via IPFS gateway), and normalises it into the `FeedPost` shape.
+3. `FeedView` bootstraps the `usePersonalizedFeed` hook with that list and renders the personalization toggle.
+4. Tipping updates the local list immediately and registers the post in `localStorage` for future sessions. Ordering favours items you tipped when personalization is enabled.
 
-## Editing The Dataset
+## Configuration
 
-Update `data/db.json` to add, remove, or tweak posts. Each entry follows the `MockPost` shape:
+Set the following environment variables (see `.env.example`):
 
-```json
-{
-  "id": "unique-slug",
-  "title": "Readable title",
-  "summary": "Short card summary.",
-  "body": "Markdown body rendered on the post page.",
-  "creatorAddress": "0xcreator...",
-  "tips": 0,
-  "tbaAddress": "0xtba...",
-  "createdAt": "2024-10-18T15:32:00.000Z",
-  "coverImageUrl": "https://optional-image",
-  "tags": ["tag-one", "tag-two"]
-}
-```
+- `AURA_RPC_URL` – HTTPS RPC endpoint for the chain (Sepolia by default).
+- `AURA_POST_ADDRESS` – Deployed AuraPost contract address.
+- `AURA_CHAIN_ID` (optional) – Override chain ID if not Sepolia.
+- `AURA_IPFS_GATEWAY` / `NEXT_PUBLIC_AURA_IPFS_GATEWAY` (optional) – Custom IPFS gateway base URL.
 
-Changes hot-reload automatically during `npm run dev`; no additional scripts are required.
+Restart `npm run dev` after changing environment variables. Minting a new post on-chain automatically surfaces it in the feed after the next revalidation cycle (30 seconds by default).

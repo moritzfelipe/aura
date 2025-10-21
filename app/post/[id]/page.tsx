@@ -1,23 +1,34 @@
 import { notFound } from "next/navigation";
-import { getMockPosts } from "@/features/feed/data/getMockPosts";
+import { getAuraPosts } from "@/features/feed/data/getAuraPosts";
 import { PostDetailView } from "@/features/post-detail/components/PostDetailView";
+import type { FeedPost } from "@/features/feed/types";
 
 type PostPageParams = {
   id: string;
 };
 
-export async function generateStaticParams() {
-  const posts = await getMockPosts();
-  return posts.map((post) => ({ id: post.id }));
-}
+export const revalidate = 30;
 
 export default async function PostPage({ params }: { params: PostPageParams }) {
-  const posts = await getMockPosts();
+  let posts: FeedPost[] = [];
+
+  try {
+    posts = await getAuraPosts();
+  } catch (error) {
+    console.error("Failed to load post", error);
+    notFound();
+  }
+
   const post = posts.find((item) => item.id === params.id);
 
   if (!post) {
     notFound();
   }
 
-  return <PostDetailView post={post} relatedPosts={posts.filter((item) => item.id !== post.id)} />;
+  return (
+    <PostDetailView
+      post={post}
+      relatedPosts={posts.filter((item) => item.id !== post.id)}
+    />
+  );
 }

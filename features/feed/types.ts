@@ -1,14 +1,17 @@
-export type MockPost = {
+export type FeedPost = {
   id: string;
+  tokenId: string;
   title: string;
   summary: string;
   body: string;
   creatorAddress: string;
   tips: number;
-  tbaAddress: string;
+  tbaAddress: string | null;
   createdAt: string;
   coverImageUrl?: string;
   tags: string[];
+  tokenUri: string;
+  contentHash: string;
 };
 
 export type PersonalizedState = {
