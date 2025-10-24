@@ -45,3 +45,10 @@ AURA_POST_ADDRESS=0xYourDeployedContract
 ```
 
 The Next.js app will fetch posts by looping from `1` to `totalSupply`, calling `tokenURI`/`contentHashOf`, and dereferencing the IPFS metadata. Tip functionality remains local until Phase 3.
+
+## Foundry Tests & Scripts
+
+- Run `forge test --match-contract AuraPostTest` for focused checks on publish flows, sequential IDs, and hash integrity.
+- `foundry.toml` is configured to consume `node_modules/@openzeppelin/contracts`; install `forge-std` once with `forge install foundry-rs/forge-std`.
+- `DeployAuraPost.s.sol` broadcasts a new contract; supply `PRIVATE_KEY` and `AURA_POST_SAMPLE_*` env vars to mint a demo post immediately after deployment.
+- Use `SeedLocalPosts.s.sol` to mint additional posts into an existing deployment when exercising the curator UI against Anvil or Sepolia.

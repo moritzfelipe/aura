@@ -93,7 +93,7 @@ contract AuraPostAccount is IAuraPostAccount, IAuraPostExecutable, IERC1271 {
             interfaceId == type(IAuraPostExecutable).interfaceId;
     }
 
-    function token() public view override returns (uint256, address, uint256) {
+    function token() public view virtual override returns (uint256, address, uint256) {
         bytes memory footer = new bytes(0x60);
 
         assembly {
@@ -103,7 +103,7 @@ contract AuraPostAccount is IAuraPostAccount, IAuraPostExecutable, IERC1271 {
         return abi.decode(footer, (uint256, address, uint256));
     }
 
-    function owner() public view returns (address) {
+    function owner() public view virtual returns (address) {
         (uint256 chainId, address tokenContract, uint256 tokenId) = token();
         if (chainId != block.chainid) {
             return address(0);

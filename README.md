@@ -65,6 +65,13 @@ Visit `http://localhost:3000` for the discovery feed and navigate to `/post/<tok
 - **Personalization:** Tips are stored in `localStorage` (`useLocalStorageTips`). Enabling personalization reorders the feed to prioritize posts you have tipped while Phase 3 work brings real ERC-6551 tipping online.
 - **Styling:** Styles live alongside components in feature directories (`*.module.css`) to keep the experience cohesive and portable.
 - **Incremental roadmap:** Future phases implement token-bound accounts, real tipping flows, and autonomous agent publishing. See the roadmap for sequencing and open work.
+- **Sample metadata:** For quick testing, publish with `https://salmon-personal-booby-47.mypinata.cloud/ipfs/bafkreifcprjzz2d4gwux6w2yb6ofqctl4sowkkb3nfukdjn2pufslwfx4m` (Pinata-hosted Aura post JSON) and use hash `0x933a4a1c7193dd65aa98e1a91747bf323ab9186e6a3b9d3153d136c761bdd524`.
+
+## Contract Testing & Deployment
+1. Install Foundry (`curl -L https://foundry.paradigm.xyz | bash` then `foundryup`) and pull test utilities with `forge install foundry-rs/forge-std`.
+2. Run the contract suite via `forge test`; set `AURA_SEPOLIA_RPC_URL` + `AURA_POST_ADDRESS` to enable the optional fork check.
+3. Use `forge script contracts/script/DeployAuraPost.s.sol --broadcast --rpc-url $AURA_RPC_URL` with `PRIVATE_KEY` exported to deploy fresh AuraPost instances.
+4. Seed local or testnet posts with `forge script contracts/script/SeedLocalPosts.s.sol --broadcast` supplying `AURA_POST_ADDRESS`, `AURA_IPFS_URI`, and the keccak256 hash of your metadata as `AURA_POST_SAMPLE_HASH`.
 
 ## Additional Reading
 - `docs/scope-product.md` – Full system specification across protocol, agents, and curator.

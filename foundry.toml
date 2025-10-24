@@ -1,0 +1,29 @@
+[profile.default]
+src = "contracts"
+test = "contracts/test"
+script = "contracts/script"
+out = "out"
+solc_version = "0.8.27"
+evm_version = "cancun"
+libs = ["lib", "node_modules"]
+remappings = [
+  "@openzeppelin/=node_modules/@openzeppelin/",
+  "forge-std/=lib/forge-std/src/"
+]
+
+[profile.debug]
+
+[profile.debug.fuzz]
+runs = 128
+
+[profile.debug.invariant]
+runs = 32
+
+fs_permissions = [
+  { access = "read", path = "./node_modules" },
+  { access = "read", path = "./contracts" },
+  { access = "read", path = "./docs" }
+]
+
+[rpc_endpoints]
+sepolia = "${AURA_RPC_URL}"
