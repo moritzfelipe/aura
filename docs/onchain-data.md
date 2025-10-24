@@ -14,6 +14,7 @@ AURA_ACCOUNT_IMPLEMENTATION=0xEb77bDb139319529210dE051eb932c5577e63f26
 AURA_ERC6551_REGISTRY=0x02101dfB77FDE026414827Fdc604ddAF224F0921
 AURA_IPFS_GATEWAY=https://ipfs.io/ipfs/
 NEXT_PUBLIC_AURA_IPFS_GATEWAY=https://ipfs.io/ipfs/
+NEXT_PUBLIC_AURA_CHAIN_ID=11155111
 ```
 
 - `AURA_RPC_URL` – HTTPS RPC endpoint.
@@ -23,6 +24,7 @@ NEXT_PUBLIC_AURA_IPFS_GATEWAY=https://ipfs.io/ipfs/
 - `AURA_ERC6551_REGISTRY` – Registry used to derive and deploy token-bound accounts (canonical Sepolia deployment).
 - `AURA_IPFS_GATEWAY` – Server-side gateway for fetching metadata.
 - `NEXT_PUBLIC_AURA_IPFS_GATEWAY` – Client-side gateway for detail links.
+- `NEXT_PUBLIC_AURA_CHAIN_ID` – Client-side hint for wallet switching (defaults to Sepolia).
 
 Restart the dev server after changing any of these values.
 

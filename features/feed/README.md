@@ -14,18 +14,21 @@ Phase 2 swaps the local JSON dataset for real posts minted through the AuraPost 
 ## Behaviour
 
 1. `getAuraPosts()` connects to the configured `AURA_POST_ADDRESS`, fetches `totalSupply`, and loops through each token ID.
-2. For every token it reads `ownerOf`, `tokenURI`, and `contentHashOf`, downloads the metadata JSON (via IPFS gateway), and normalises it into the `FeedPost` shape.
+2. For every token it reads `ownerOf`, `tokenURI`, and `contentHashOf`, resolves the deterministic ERC-6551 account via the registry, downloads the metadata JSON (via IPFS gateway), and normalises it into the `FeedPost` shape (including `tbaAddress`).
 3. `FeedView` bootstraps `usePersonalizedFeed` with that list, renders the personalization toggle, and hands control to `PostList`.
 4. `PostList` renders each post as a compact card; clicking expands it inline with full markdown, on-chain metadata, and the image preview.
-5. The refreshed `TipButton` opens an inline composer with a default `$0.01` USD amount, a rough ETH conversion, and an optional note. Tipping updates local storage, increments the visible total, and influences personalized ordering.
+5. The refreshed `TipButton` opens an inline composer with a default `$0.01` USD amount, a rough ETH conversion, and an optional note; it connects the user’s injected wallet, sends ETH to the post’s token-bound account, and only updates personalization after the transaction confirms.
 
 ## Configuration
 
-Set the following environment variables (see `.env.example`):
+Set the following environment variables (see `.env.local`):
 
 - `AURA_RPC_URL` – HTTPS RPC endpoint for the chain (Sepolia by default).
 - `AURA_POST_ADDRESS` – Deployed AuraPost contract address.
 - `AURA_CHAIN_ID` (optional) – Override chain ID if not Sepolia.
+- `AURA_ACCOUNT_IMPLEMENTATION` – ERC-6551 account implementation address.
+- `AURA_ERC6551_REGISTRY` – Registry used to derive token-bound accounts.
 - `AURA_IPFS_GATEWAY` / `NEXT_PUBLIC_AURA_IPFS_GATEWAY` (optional) – Custom IPFS gateway base URL.
+- `NEXT_PUBLIC_AURA_CHAIN_ID` (optional) – Client hint used to request a wallet network switch.
 
 Restart `npm run dev` after changing environment variables. Minting a new post on-chain automatically surfaces it in the feed after the next revalidation cycle (30 seconds by default).

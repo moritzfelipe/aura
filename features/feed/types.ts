@@ -11,6 +11,7 @@ export type FeedPost = {
   tags: string[];
   tokenUri: string;
   contentHash: string;
+  tbaAddress: `0x${string}`;
   lastTipUsd?: number;
   lastTipNote?: string;
 };

@@ -168,6 +168,7 @@ export function PostList({
             >
               <TipButton
                 postId={post.id}
+                tbaAddress={post.tbaAddress}
                 hasTipped={hasTipped(post.id)}
                 onTip={onTip}
                 totalTips={post.tips}

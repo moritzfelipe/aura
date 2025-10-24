@@ -26,6 +26,8 @@ const DEFAULT_CHAIN_ID = 11155111; // Sepolia
 function resolveConfig() {
   const rpcUrl = process.env.AURA_RPC_URL;
   const address = process.env.AURA_POST_ADDRESS;
+  const registry = process.env.AURA_ERC6551_REGISTRY;
+  const accountImplementation = process.env.AURA_ACCOUNT_IMPLEMENTATION;
   const chainId = process.env.AURA_CHAIN_ID ? Number(process.env.AURA_CHAIN_ID) : DEFAULT_CHAIN_ID;
 
   if (!rpcUrl) {
@@ -36,7 +38,21 @@ function resolveConfig() {
     throw new Error("AURA_POST_ADDRESS is not defined");
   }
 
-  return { rpcUrl, address: address as `0x${string}`, chainId };
+  if (!registry) {
+    throw new Error("AURA_ERC6551_REGISTRY is not defined");
+  }
+
+  if (!accountImplementation) {
+    throw new Error("AURA_ACCOUNT_IMPLEMENTATION is not defined");
+  }
+
+  return {
+    rpcUrl,
+    postAddress: address as `0x${string}`,
+    registryAddress: registry as `0x${string}`,
+    accountImplementation: accountImplementation as `0x${string}`,
+    chainId
+  };
 }
 
 function createClient(rpcUrl: string, chainId: number): PublicClient {
@@ -89,14 +105,31 @@ async function fetchMetadata(tokenUri: string): Promise<AuraMetadata | null> {
   }
 }
 
+const registryAbi = [
+  {
+    type: "function",
+    name: "account",
+    stateMutability: "view",
+    inputs: [
+      { name: "implementation", type: "address" },
+      { name: "chainId", type: "uint256" },
+      { name: "tokenContract", type: "address" },
+      { name: "tokenId", type: "uint256" },
+      { name: "salt", type: "uint256" }
+    ],
+    outputs: [{ name: "account", type: "address" }]
+  }
+] as const;
+
 function normalizePost(params: {
   tokenId: bigint;
   owner: `0x${string}`;
   tokenUri: string;
   contentHash: `0x${string}`;
+  tbaAddress: `0x${string}`;
   metadata: AuraMetadata | null;
 }): FeedPost {
-  const { tokenId, owner, tokenUri, contentHash, metadata } = params;
+  const { tokenId, owner, tokenUri, contentHash, tbaAddress, metadata } = params;
 
   const title =
     metadata?.content?.title ??
@@ -145,16 +178,23 @@ function normalizePost(params: {
     coverImageUrl,
     tags,
     tokenUri,
-    contentHash
+    contentHash,
+    tbaAddress
   };
 }
 
 export async function getAuraPosts(): Promise<FeedPost[]> {
-  const { rpcUrl, address, chainId } = resolveConfig();
+  const {
+    rpcUrl,
+    postAddress,
+    registryAddress,
+    accountImplementation,
+    chainId
+  } = resolveConfig();
   const client = createClient(rpcUrl, chainId);
 
   const totalSupply = await client.readContract({
-    address,
+    address: postAddress,
     abi: auraPostAbi,
     functionName: "totalSupply"
   }) as bigint;
@@ -169,24 +209,37 @@ export async function getAuraPosts(): Promise<FeedPost[]> {
     tokenIds.map(async (tokenId) => {
       const [owner, tokenUri, contentHash] = await Promise.all([
         client.readContract({
-          address,
+          address: postAddress,
           abi: auraPostAbi,
           functionName: "ownerOf",
           args: [tokenId]
         }) as Promise<`0x${string}`>,
         client.readContract({
-          address,
+          address: postAddress,
           abi: auraPostAbi,
           functionName: "tokenURI",
           args: [tokenId]
         }) as Promise<string>,
         client.readContract({
-          address,
+          address: postAddress,
           abi: auraPostAbi,
           functionName: "contentHashOf",
           args: [tokenId]
         }) as Promise<`0x${string}`>
       ]);
+
+      const tbaAddress = await client.readContract({
+        address: registryAddress,
+        abi: registryAbi,
+        functionName: "account",
+        args: [
+          accountImplementation,
+          BigInt(chainId),
+          postAddress,
+          tokenId,
+          0n
+        ]
+      }) as `0x${string}`;
 
       const metadata = await fetchMetadata(tokenUri);
 
@@ -195,6 +248,7 @@ export async function getAuraPosts(): Promise<FeedPost[]> {
         owner,
         tokenUri,
         contentHash,
+        tbaAddress,
         metadata
       });
     })
