@@ -169,7 +169,6 @@ export function PostList({
                 onTip={onTip}
                 totalTips={post.tips}
                 lastTipUsd={tip?.lastAmountUsd ?? post.lastTipUsd}
-                lastTipNote={tip?.lastNote ?? post.lastTipNote}
               />
             </footer>
           </article>

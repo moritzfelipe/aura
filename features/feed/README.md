@@ -17,7 +17,7 @@ Phase 2 swaps the local JSON dataset for real posts minted through the AuraPost 
 2. For every token it reads `ownerOf`, `tokenURI`, and `contentHashOf`, resolves the deterministic ERC-6551 account via the registry, downloads the metadata JSON (via IPFS gateway), and normalises it into the `FeedPost` shape (including `tbaAddress`).
 3. `FeedView` bootstraps `usePersonalizedFeed` with that list, renders the personalization toggle, and hands control to `PostList`.
 4. `PostList` renders each post as a compact card; clicking expands it inline with full markdown, on-chain metadata, and the image preview.
-5. The refreshed `TipButton` opens an inline composer with a default `$0.01` USD amount, a rough ETH conversion, and an optional note; it connects the user’s injected wallet, sends ETH to the post’s token-bound account, and only updates personalization after the transaction confirms.
+5. The refreshed `TipButton` lets users build a tip by repeatedly clicking across the button (left adds a small increment, right adds a larger bump), shows the pending amount in a compact display pill with an inline edit affordance, and sends automatically after a short pause in interaction.
 
 ## Configuration
 

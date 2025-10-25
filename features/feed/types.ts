@@ -13,20 +13,17 @@ export type FeedPost = {
   contentHash: string;
   tbaAddress: `0x${string}`;
   lastTipUsd?: number;
-  lastTipNote?: string;
 };
 
 export type TipInput = {
   postId: string;
   amountUsd: number;
-  note?: string;
 };
 
 export type PersonalizedTip = {
   postId: string;
   totalTips: number;
   lastAmountUsd: number;
-  lastNote?: string;
   lastUpdated: string;
 };
 

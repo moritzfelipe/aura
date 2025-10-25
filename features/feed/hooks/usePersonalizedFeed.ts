@@ -27,28 +27,26 @@ export function usePersonalizedFeed(initialPosts: FeedPost[]): UsePersonalizedFe
         return {
           ...post,
           tips: (tip?.totalTips ?? 0) + post.tips,
-          lastTipUsd: tip?.lastAmountUsd ?? post.lastTipUsd,
-          lastTipNote: tip?.lastNote ?? post.lastTipNote
+          lastTipUsd: tip?.lastAmountUsd ?? post.lastTipUsd
         };
       })
     );
   }, [initialPosts, tippedPostIds, getTip]);
 
   const handleTip = useCallback(
-    ({ postId, amountUsd, note }: TipInput) => {
+    ({ postId, amountUsd }: TipInput) => {
       setPosts((current) =>
         current.map((post) =>
           post.id === postId
             ? {
                 ...post,
                 tips: post.tips + 1,
-                lastTipUsd: amountUsd,
-                lastTipNote: note
+                lastTipUsd: amountUsd
               }
             : post
         )
       );
-      registerTip(postId, amountUsd, note);
+      registerTip(postId, amountUsd);
     },
     [registerTip]
   );

@@ -7,7 +7,12 @@ import {
   useRef,
   useState
 } from "react";
-import type { ChangeEvent, KeyboardEvent, MouseEvent } from "react";
+import type {
+  ChangeEvent,
+  CSSProperties,
+  KeyboardEvent,
+  MouseEvent
+} from "react";
 import type { TipInput } from "@/features/feed/types";
 import type { Hex } from "viem";
 import { parseUnits } from "viem";
@@ -21,15 +26,32 @@ type TipButtonProps = {
   onTip: (input: TipInput) => void | Promise<void>;
   totalTips: number;
   lastTipUsd?: number;
-  lastTipNote?: string;
 };
 
 const DEFAULT_USD_AMOUNT = 0.01;
+const MIN_USD_AMOUNT = 0.01;
+const MAX_USD_AMOUNT = 500;
+const MIN_INCREMENT = 0.01;
+const MAX_INCREMENT = 0.45;
+const AUTO_SUBMIT_DELAY = 1500;
 const USD_PER_ETH = 3000;
 const DEFAULT_CHAIN_ID = 11155111;
 
 const formatUsd = (amount: number) =>
-  Number.isFinite(amount) ? amount.toFixed(2) : DEFAULT_USD_AMOUNT.toFixed(2);
+  Number.isFinite(amount)
+    ? amount.toFixed(2)
+    : DEFAULT_USD_AMOUNT.toFixed(2);
+
+const clampAmount = (amount: number) => {
+  if (!Number.isFinite(amount)) {
+    return DEFAULT_USD_AMOUNT;
+  }
+  const bounded = Math.min(Math.max(amount, MIN_USD_AMOUNT), MAX_USD_AMOUNT);
+  return Number.parseFloat(bounded.toFixed(2));
+};
+
+const seedAmount = (value?: number) =>
+  clampAmount(typeof value === "number" ? value : DEFAULT_USD_AMOUNT);
 
 export function TipButton({
   postId,
@@ -37,19 +59,28 @@ export function TipButton({
   hasTipped,
   onTip,
   totalTips,
-  lastTipUsd,
-  lastTipNote
+  lastTipUsd
 }: TipButtonProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [isComposerOpen, setIsComposerOpen] = useState(false);
-  const [amountField, setAmountField] = useState(() =>
-    formatUsd(lastTipUsd ?? DEFAULT_USD_AMOUNT)
+  const autoSubmitRef = useRef<number | null>(null);
+  const pendingAmountRef = useRef<number>(seedAmount(lastTipUsd));
+
+  const [pendingAmountUsd, setPendingAmountUsd] = useState(() =>
+    seedAmount(lastTipUsd)
   );
-  const [noteField, setNoteField] = useState(lastTipNote ?? "");
+  const [amountField, setAmountField] = useState(() =>
+    formatUsd(seedAmount(lastTipUsd))
+  );
+  const [lastIntensity, setLastIntensity] = useState(0);
+  const [isAutoQueued, setIsAutoQueued] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [lastTxHash, setLastTxHash] = useState<Hex | null>(null);
+  const [hasManualEdit, setHasManualEdit] = useState(false);
+  const [isEditingAmount, setIsEditingAmount] = useState(false);
+  const amountInputRef = useRef<HTMLInputElement | null>(null);
+
   const {
     account,
     connect,
@@ -60,79 +91,22 @@ export function TipButton({
   } = useTipWallet();
 
   useEffect(() => {
-    if (typeof lastTipUsd === "number" && !Number.isNaN(lastTipUsd)) {
-      setAmountField(formatUsd(lastTipUsd));
-    }
-  }, [lastTipUsd]);
+    pendingAmountRef.current = pendingAmountUsd;
+  }, [pendingAmountUsd]);
 
   useEffect(() => {
-    setNoteField(lastTipNote ?? "");
-  }, [lastTipNote]);
-
-  useEffect(() => {
-    if (!isComposerOpen) {
+    if (typeof lastTipUsd !== "number" || Number.isNaN(lastTipUsd)) {
       return;
     }
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsComposerOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isComposerOpen]);
-
-  const parsedAmount = useMemo(() => Number.parseFloat(amountField), [amountField]);
-  const amountUsd =
-    Number.isFinite(parsedAmount) && parsedAmount > 0
-      ? Number.parseFloat(parsedAmount.toFixed(2))
-      : DEFAULT_USD_AMOUNT;
-
-  const tipAmountEth = useMemo(() => amountUsd / USD_PER_ETH, [amountUsd]);
-
-  const toggleComposer = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      event.stopPropagation();
-      setIsComposerOpen((value) => {
-        const nextValue = !value;
-        if (nextValue) {
-          setLocalError(null);
-          resetError();
-        }
-        return nextValue;
-      });
-    },
-    [resetError]
-  );
-
-  const pendingLabel = isSubmitting ? "Sending..." : isConnecting ? "Connecting..." : "Send tip";
-  const isBusy = isSubmitting || isConnecting;
-
-  const explorerUrl = useMemo(() => {
-    if (!lastTxHash) {
-      return null;
+    if (isSubmitting || hasManualEdit || isEditingAmount) {
+      return;
     }
-    const chainId = Number.parseInt(
-      process.env.NEXT_PUBLIC_AURA_CHAIN_ID ?? `${DEFAULT_CHAIN_ID}`,
-      10
-    );
-    if (Number.isNaN(chainId) || chainId === DEFAULT_CHAIN_ID) {
-      return `https://sepolia.etherscan.io/tx/${lastTxHash}`;
-    }
-    return null;
-  }, [lastTxHash]);
-
-  const shortenedAccount = useMemo(() => {
-    if (!account) {
-      return null;
-    }
-    return `${account.slice(0, 6)}…${account.slice(-4)}`;
-  }, [account]);
+    const normalized = seedAmount(lastTipUsd);
+    pendingAmountRef.current = normalized;
+    setPendingAmountUsd(normalized);
+    setAmountField(formatUsd(normalized));
+    setLastIntensity(hasTipped ? 0.35 : 0);
+  }, [lastTipUsd, isSubmitting, hasManualEdit, isEditingAmount, hasTipped]);
 
   useEffect(() => {
     if (!successMessage) {
@@ -144,46 +118,64 @@ export function TipButton({
     return () => window.clearTimeout(timeout);
   }, [successMessage]);
 
+  useEffect(
+    () => () => {
+      if (autoSubmitRef.current) {
+        window.clearTimeout(autoSubmitRef.current);
+      }
+    },
+    []
+  );
+
+  const cancelAutoSubmit = useCallback(() => {
+    if (autoSubmitRef.current) {
+      window.clearTimeout(autoSubmitRef.current);
+      autoSubmitRef.current = null;
+    }
+    setIsAutoQueued(false);
+  }, []);
+
   useEffect(() => {
-    if (!isComposerOpen) {
-      setLocalError(null);
-      resetError();
+    if (isSubmitting || isConnecting) {
+      cancelAutoSubmit();
     }
-  }, [isComposerOpen, resetError]);
+  }, [isSubmitting, isConnecting, cancelAutoSubmit]);
 
-  const handleAmountChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setAmountField(event.target.value);
-  }, []);
-
-  const handleNoteChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setNoteField(event.target.value);
-  }, []);
-
-  const handleComposerKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.stopPropagation();
-      setIsComposerOpen(false);
+  useEffect(() => {
+    if (!isEditingAmount) {
+      return;
     }
-  }, []);
+    const input = amountInputRef.current;
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  }, [isEditingAmount]);
 
   const handleSubmit = useCallback(async () => {
-    const note = noteField.trim();
-    const tipNote = note.length ? note : undefined;
-
+    cancelAutoSubmit();
     setLocalError(null);
     resetError();
     setSuccessMessage(null);
 
-    const valueWei = (() => {
-      try {
-        return parseUnits(tipAmountEth.toFixed(18), 18);
-      } catch {
-        return 0n;
-      }
-    })();
+    const amountUsd = clampAmount(pendingAmountRef.current);
+    const amountEth = amountUsd / USD_PER_ETH;
+
+    if (amountUsd < MIN_USD_AMOUNT) {
+      setLocalError("Tip amount is too small. Try increasing it.");
+      return;
+    }
+
+    let valueWei: bigint;
+    try {
+      valueWei = parseUnits(amountEth.toFixed(18), 18);
+    } catch {
+      setLocalError("Unable to parse tip amount. Try again.");
+      return;
+    }
 
     if (valueWei <= 0n) {
-      setLocalError("Tip amount is too small. Try increasing the USD value.");
+      setLocalError("Tip amount is too small. Try increasing it.");
       return;
     }
 
@@ -220,11 +212,16 @@ export function TipButton({
       await Promise.resolve(
         onTip({
           postId,
-          amountUsd,
-          note: tipNote
+          amountUsd
         })
       );
-      setIsComposerOpen(false);
+
+      const resetAmount = seedAmount(DEFAULT_USD_AMOUNT);
+      pendingAmountRef.current = resetAmount;
+      setPendingAmountUsd(resetAmount);
+      setAmountField(formatUsd(resetAmount));
+      setHasManualEdit(false);
+      setLastIntensity(hasTipped ? 0.35 : 0);
       setSuccessMessage("Tip sent!");
     } catch (transactionError) {
       const message =
@@ -236,127 +233,291 @@ export function TipButton({
       setIsSubmitting(false);
     }
   }, [
-    amountUsd,
     account,
+    cancelAutoSubmit,
     connect,
-    noteField,
     onTip,
     postId,
     resetError,
     sendTip,
     tbaAddress,
-    tipAmountEth
+    hasTipped
   ]);
 
-  const handleInputKeyDown = useCallback(
+  const scheduleAutoSubmit = useCallback(() => {
+    cancelAutoSubmit();
+    setIsAutoQueued(true);
+    autoSubmitRef.current = window.setTimeout(() => {
+      autoSubmitRef.current = null;
+      setIsAutoQueued(false);
+      void handleSubmit();
+    }, AUTO_SUBMIT_DELAY);
+  }, [cancelAutoSubmit, handleSubmit]);
+
+  const handleTriggerClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+      if (isSubmitting || isConnecting) {
+        return;
+      }
+
+      setIsEditingAmount(false);
+
+      const rect = event.currentTarget.getBoundingClientRect();
+      const clickX =
+        event.clientX === 0 && event.clientY === 0
+          ? rect.left + rect.width / 2
+          : event.clientX;
+      const ratio =
+        rect.width > 0 ? (clickX - rect.left) / rect.width : 0.5;
+      const normalizedRatio = Number.isNaN(ratio)
+        ? 0.5
+        : Math.min(Math.max(ratio, 0), 1);
+
+      const increment =
+        MIN_INCREMENT + normalizedRatio * (MAX_INCREMENT - MIN_INCREMENT);
+      const nextAmount = clampAmount(pendingAmountRef.current + increment);
+
+      pendingAmountRef.current = nextAmount;
+      setPendingAmountUsd(nextAmount);
+      setAmountField(formatUsd(nextAmount));
+      setLastIntensity(0.35 + normalizedRatio * 0.4);
+      setHasManualEdit(true);
+      setSuccessMessage(null);
+      setLocalError(null);
+      resetError();
+      scheduleAutoSubmit();
+    },
+    [isSubmitting, isConnecting, resetError, scheduleAutoSubmit]
+  );
+
+  const beginManualEdit = useCallback(() => {
+    if (isSubmitting || isConnecting) {
+      return;
+    }
+    cancelAutoSubmit();
+    setIsEditingAmount(true);
+    setSuccessMessage(null);
+    setLocalError(null);
+    resetError();
+    setHasManualEdit(true);
+  }, [cancelAutoSubmit, isSubmitting, isConnecting, resetError]);
+
+  const handleAmountChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      event.stopPropagation();
+      const value = event.target.value.replace(",", ".");
+      setAmountField(value);
+
+      const parsed = Number.parseFloat(value);
+      const nextAmount = Number.isFinite(parsed) ? parsed : 0;
+      pendingAmountRef.current = nextAmount;
+      setPendingAmountUsd(nextAmount);
+      setHasManualEdit(true);
+      setSuccessMessage(null);
+      setLocalError(null);
+      resetError();
+    },
+    [resetError]
+  );
+
+  const handleAmountBlur = useCallback(() => {
+    const parsed = Number.parseFloat(amountField);
+    const normalized = seedAmount(parsed);
+    pendingAmountRef.current = normalized;
+    setPendingAmountUsd(normalized);
+    setAmountField(formatUsd(normalized));
+    setIsEditingAmount(false);
+    if (!isSubmitting && !isConnecting) {
+      scheduleAutoSubmit();
+    }
+  }, [amountField, isSubmitting, isConnecting, scheduleAutoSubmit]);
+
+  const handleAmountKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter") {
         event.preventDefault();
+        event.stopPropagation();
+        setHasManualEdit(true);
+        setIsEditingAmount(false);
         void handleSubmit();
       }
     },
     [handleSubmit]
   );
 
-  const displayedError = localError ?? walletError;
+  const handleWrapperKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      event.stopPropagation();
+      if (event.key === "Escape") {
+        cancelAutoSubmit();
+        setSuccessMessage(null);
+        setLocalError(null);
+        setIsEditingAmount(false);
+      }
+    },
+    [cancelAutoSubmit]
+  );
 
-  const tipLabel = hasTipped ? "Tipped" : "Tip";
-  const tipCountLabel = `${Math.max(totalTips, 0)} ${totalTips === 1 ? "tip" : "tips"}`;
+  const isBusy = isSubmitting || isConnecting;
+
+  const explorerUrl = useMemo(() => {
+    if (!lastTxHash) {
+      return null;
+    }
+    const chainId = Number.parseInt(
+      process.env.NEXT_PUBLIC_AURA_CHAIN_ID ?? `${DEFAULT_CHAIN_ID}`,
+      10
+    );
+
+    if (Number.isNaN(chainId) || chainId === DEFAULT_CHAIN_ID) {
+      return `https://sepolia.etherscan.io/tx/${lastTxHash}`;
+    }
+    return null;
+  }, [lastTxHash]);
+
+  const shortenedAccount = useMemo(() => {
+    if (!account) {
+      return null;
+    }
+    return `${account.slice(0, 6)}…${account.slice(-4)}`;
+  }, [account]);
+
+  const tipAmountEth = useMemo(() => {
+    const value = Math.max(pendingAmountUsd, 0) / USD_PER_ETH;
+    return Number.isFinite(value) ? value : 0;
+  }, [pendingAmountUsd]);
+
+  const displayedError = localError ?? walletError;
+  const tipCountLabel = `${Math.max(totalTips, 0)} ${
+    totalTips === 1 ? "tip" : "tips"
+  }`;
+  const isAmountInvalid = (() => {
+    if (!amountField.trim()) {
+      return false;
+    }
+    const parsed = Number.parseFloat(amountField);
+    return !Number.isFinite(parsed) || parsed < MIN_USD_AMOUNT;
+  })();
+
+  const triggerStyle = {
+    "--tip-intensity": lastIntensity.toFixed(2)
+  } as CSSProperties;
+  const displayAmount = formatUsd(pendingAmountUsd);
+  const isEngaged = lastIntensity > 0.01 || hasTipped;
 
   return (
     <div
       ref={containerRef}
       className={styles.wrapper}
       onClick={(event) => event.stopPropagation()}
-      onKeyDown={handleComposerKeyDown}
+      onKeyDown={handleWrapperKeyDown}
     >
-      <button
-        type="button"
-        className={[
-          styles.trigger,
-          hasTipped ? styles.triggerActive : "",
-          isComposerOpen ? styles.triggerOpen : ""
-        ].join(" ")}
-        onClick={toggleComposer}
-      >
-        <span>{tipLabel}</span>
-        <span className={styles.amount}>${amountUsd.toFixed(2)}</span>
-      </button>
+      <div className={styles.inlineControl}>
+        <button
+          type="button"
+          className={[
+            styles.trigger,
+            hasTipped ? styles.triggerActive : "",
+            isAutoQueued ? styles.triggerPending : "",
+            isBusy ? styles.triggerBusy : "",
+            isEngaged ? styles.triggerEngaged : ""
+          ].join(" ")}
+          style={triggerStyle}
+          onClick={handleTriggerClick}
+          disabled={isBusy}
+        >
+          Tip
+        </button>
+        <div className={styles.amountField}>
+          {isEditingAmount ? (
+            <input
+              ref={amountInputRef}
+              id={`tip-amount-${postId}`}
+              type="text"
+              inputMode="decimal"
+              pattern="^[0-9]*[.,]?[0-9]{0,2}$"
+              placeholder="0.00"
+              value={amountField}
+              onChange={handleAmountChange}
+              onBlur={handleAmountBlur}
+              onKeyDown={handleAmountKeyDown}
+              className={[
+                styles.amountInput,
+                isAmountInvalid ? styles.amountInputError : ""
+              ].join(" ")}
+              disabled={isBusy}
+            />
+          ) : (
+            <button
+              type="button"
+              className={styles.amountDisplay}
+              onClick={beginManualEdit}
+              aria-label="Edit tip amount"
+            >
+              <span className={styles.amountValue}>${displayAmount}</span>
+              <span className={styles.editIcon} aria-hidden="true">
+                <svg viewBox="0 0 20 20" focusable="false">
+                  <path
+                    d="M4.5 13.5 3 17l3.5-1.5L15 7.99 12.01 5 4.5 13.5Zm11.71-7.79c.39-.39.39-1.02 0-1.41L14.7 3.79a.996.996 0 0 0-1.41 0l-1.29 1.3L15 7.99l1.21-1.28Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
 
-      {isComposerOpen ? (
-        <div className={styles.popover}>
-          <label className={styles.label} htmlFor={`tip-amount-${postId}`}>
-            Tip amount (USD)
-          </label>
-          <input
-            id={`tip-amount-${postId}`}
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={amountField}
-            onChange={handleAmountChange}
-            onKeyDown={handleInputKeyDown}
-            className={styles.input}
-          />
-          <span className={styles.helper}>
-            ≈ {tipAmountEth.toFixed(6)} ETH @ ${USD_PER_ETH.toLocaleString()}/ETH
-          </span>
+      <div className={styles.metaRow}>
+        <span className={styles.metaItem}>{tipCountLabel}</span>
+        <span className={styles.metaItem}>
+          ≈ {tipAmountEth.toFixed(6)} ETH
+        </span>
+        {shortenedAccount ? (
+          <span className={styles.metaItem}>Wallet: {shortenedAccount}</span>
+        ) : null}
+      </div>
 
-          <label className={styles.label} htmlFor={`tip-note-${postId}`}>
-            Note (optional)
-          </label>
-          <input
-            id={`tip-note-${postId}`}
-            type="text"
-            placeholder="Say thanks or leave feedback"
-            value={noteField}
-            onChange={handleNoteChange}
-            onKeyDown={handleInputKeyDown}
-            className={styles.input}
-          />
-
-          {shortenedAccount ? (
-            <span className={styles.status}>Connected: {shortenedAccount}</span>
+      {displayedError ||
+      successMessage ||
+      explorerUrl ||
+      isAutoQueued ||
+      isBusy ? (
+        <div className={styles.statusRow}>
+          {isAutoQueued ? (
+            <span className={`${styles.status} ${styles.statusInfo}`}>
+              Sending shortly…
+            </span>
           ) : null}
-
+          {isBusy ? (
+            <span className={`${styles.status} ${styles.statusInfo}`}>
+              {isSubmitting ? "Sending…" : "Connecting…"}
+            </span>
+          ) : null}
           {displayedError ? (
-            <span className={[styles.status, styles.statusError].join(" ")}>
+            <span className={`${styles.status} ${styles.statusError}`}>
               {displayedError}
             </span>
           ) : null}
-
-          <button
-            type="button"
-            className={styles.confirm}
-            onClick={() => void handleSubmit()}
-            disabled={isBusy}
-          >
-            {pendingLabel}
-          </button>
+          {successMessage ? (
+            <span className={`${styles.status} ${styles.statusSuccess}`}>
+              {successMessage}
+            </span>
+          ) : null}
+          {explorerUrl ? (
+            <a
+              href={explorerUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={`${styles.status} ${styles.statusLink}`}
+              onClick={(event) => event.stopPropagation()}
+            >
+              View tip ↗
+            </a>
+          ) : null}
         </div>
       ) : null}
-
-      <div className={styles.meta}>
-        <span>{tipCountLabel}</span>
-        {hasTipped && lastTipUsd ? (
-          <span className={styles.lastTip}>Last: ${lastTipUsd.toFixed(2)}</span>
-        ) : null}
-        {successMessage ? (
-          <span className={[styles.status, styles.statusSuccess].join(" ")}>
-            {successMessage}
-          </span>
-        ) : null}
-        {explorerUrl ? (
-          <a
-            href={explorerUrl}
-            target="_blank"
-            rel="noreferrer"
-            className={[styles.status, styles.statusSuccess].join(" ")}
-          >
-            View tip ↗
-          </a>
-        ) : null}
-      </div>
     </div>
   );
 }

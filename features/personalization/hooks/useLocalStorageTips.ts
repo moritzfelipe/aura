@@ -35,7 +35,6 @@ function migrateState(raw: unknown): PersonalizedState {
         postId,
         totalTips: 1,
         lastAmountUsd: 0.01,
-        lastNote: undefined,
         lastUpdated: new Date().toISOString()
       }));
 
@@ -87,7 +86,6 @@ function hydrateState(): PersonalizedState {
             postId: tip.postId,
             totalTips: tip.totalTips,
             lastAmountUsd: tip.lastAmountUsd,
-            lastNote: tip.lastNote,
             lastUpdated: tip.lastUpdated
           }))
           .filter(
@@ -118,7 +116,7 @@ export function useLocalStorageTips() {
     setState(hydrateState());
   }, []);
 
-  const registerTip = useCallback((postId: string, amountUsd: number, note?: string) => {
+  const registerTip = useCallback((postId: string, amountUsd: number) => {
     setState((current) => {
       const updatedAt = new Date().toISOString();
       const existingIndex = current.tips.findIndex((tip) => tip.postId === postId);
@@ -131,7 +129,6 @@ export function useLocalStorageTips() {
                 ...tip,
                 totalTips: tip.totalTips + 1,
                 lastAmountUsd: amountUsd,
-                lastNote: note,
                 lastUpdated: updatedAt
               }
             : tip
@@ -143,7 +140,6 @@ export function useLocalStorageTips() {
             postId,
             totalTips: 1,
             lastAmountUsd: amountUsd,
-            lastNote: note,
             lastUpdated: updatedAt
           }
         ];
