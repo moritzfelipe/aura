@@ -17,7 +17,7 @@ export function FeedView({ initialPosts, initialExpandedId }: FeedViewProps) {
 
   return (
     <section className={styles.feedContainer}>
-      <div className={`${styles.feedControls} surface`}>
+      <div className={styles.feedControls}>
         <div>
           <h2 className={styles.feedTitle}>Discovery Feed</h2>
           <p className={styles.feedSubtitle}>

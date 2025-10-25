@@ -11,11 +11,11 @@ export function PersonalizedToggle({ isEnabled, onToggle }: PersonalizedTogglePr
   return (
     <button
       type="button"
-      className={`${styles.toggle} surface`}
+      className={`${styles.toggle} ${isEnabled ? styles.toggleActive : ""}`}
       onClick={onToggle}
       aria-pressed={isEnabled}
     >
-      <div className={`${styles.knob} ${isEnabled ? styles.knobActive : ""}`} />
+      <div className={styles.knob} />
       <div className={styles.labels}>
         <span className={styles.label}>Personalized</span>
         <span className={styles.helper}>

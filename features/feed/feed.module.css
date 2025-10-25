@@ -1,8 +1,8 @@
 .feedContainer {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding-bottom: 64px;
+  gap: 32px;
+  padding-bottom: 80px;
 }
 
 .feedControls {
@@ -10,27 +10,33 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
-  padding: 24px;
+  gap: 28px;
+  padding: 32px;
+  border-radius: 28px;
+  border: 1px solid var(--app-border);
+  background: var(--app-bg-accent);
+  box-shadow: 0 28px 52px rgba(7, 8, 14, 0.4);
 }
 
 .feedTitle {
   margin: 0;
-  font-size: 1.6rem;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.45rem, 1.3rem + 0.5vw, 1.85rem);
+  letter-spacing: -0.025em;
+  color: var(--app-text-primary);
 }
 
 .feedSubtitle {
-  margin: 8px 0 0;
+  margin: 12px 0 0;
   max-width: 520px;
-  color: rgba(255, 255, 255, 0.72);
-  line-height: 1.5;
-  font-size: 0.95rem;
+  color: var(--app-text-muted);
+  line-height: 1.6;
+  font-size: 0.98rem;
 }
 
 @media (max-width: 720px) {
   .feedControls {
     flex-direction: column;
+    padding: 24px;
   }
 
   .feedSubtitle {

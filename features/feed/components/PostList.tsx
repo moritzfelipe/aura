@@ -76,7 +76,7 @@ export function PostList({
 
   if (!orderedPosts.length) {
     return (
-      <div className={`surface ${styles.emptyState}`}>
+      <div className={styles.emptyState}>
         <h3>No posts yet</h3>
         <p>Mint a post via AuraPost.publish to populate the feed.</p>
       </div>
@@ -93,11 +93,7 @@ export function PostList({
         return (
           <article
             key={post.id}
-            className={[
-              "surface",
-              styles.item,
-              isExpanded ? styles.itemExpanded : ""
-            ].join(" ")}
+            className={[styles.item, isExpanded ? styles.itemExpanded : ""].join(" ")}
             tabIndex={0}
             role="button"
             aria-expanded={isExpanded}
