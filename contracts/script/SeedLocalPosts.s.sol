@@ -5,9 +5,14 @@ import {Script, console2} from "forge-std/Script.sol";
 import {AuraPost} from "../aura-post/AuraPost.sol";
 
 interface IERC6551Registry {
-    function createAccount(address implementation, bytes32 salt, uint256 chainId, address tokenContract, uint256 tokenId)
-        external
-        returns (address);
+    function createAccount(
+        address implementation,
+        uint256 chainId,
+        address tokenContract,
+        uint256 tokenId,
+        uint256 salt,
+        bytes calldata initData
+    ) external returns (address);
 }
 
 /**
@@ -41,14 +46,26 @@ contract SeedLocalPostsScript is Script {
         console2.log("Published sample post", tokenId, "to AuraPost at", auraPostAddress);
 
         if (createAccount && registry != address(0) && implementation != address(0)) {
-            bytes32 salt = bytes32(tokenId);
+            uint256 salt = tokenId;
 
             vm.startBroadcast(broadcasterKey);
-            address tokenAccount =
-                IERC6551Registry(registry).createAccount(implementation, salt, block.chainid, auraPostAddress, tokenId);
-            vm.stopBroadcast();
-
-            console2.log("Created ERC-6551 account", tokenAccount, "for token", tokenId);
+            try IERC6551Registry(registry).createAccount(
+                implementation,
+                block.chainid,
+                auraPostAddress,
+                tokenId,
+                salt,
+                new bytes(0)
+            ) returns (address tokenAccount) {
+                vm.stopBroadcast();
+                console2.log("Created ERC-6551 account", tokenAccount, "for token", tokenId);
+            } catch (bytes memory revertData) {
+                vm.stopBroadcast();
+                console2.log(
+                    "ERC-6551 account creation reverted. Inspect revert data or registry requirements before retrying."
+                );
+                console2.logBytes(revertData);
+            }
         } else if (createAccount) {
             console2.log(
                 "Skipping ERC-6551 account creation. Provide both AURA_ERC6551_REGISTRY and AURA_ACCOUNT_IMPLEMENTATION."
