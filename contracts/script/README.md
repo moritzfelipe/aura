@@ -3,7 +3,7 @@
 Executable Foundry scripts that support deployment and local setup.
 
 - `DeployAuraPost.s.sol` deploys the `AuraPost` contract and can pre-mint demo posts when provided with metadata.
-- `SeedLocalPosts.s.sol` (optional usage) demonstrates how to mint sample posts against a local Anvil chain.
+- `SeedLocalPosts.s.sol` (optional usage) mints sample posts against an existing contract and, when supplied `AURA_ERC6551_REGISTRY` / `AURA_ACCOUNT_IMPLEMENTATION`, creates the matching ERC-6551 account automatically (toggle with `AURA_CREATE_TOKEN_ACCOUNT=false` if you need to skip the registry call).
 
 Run with:
 
