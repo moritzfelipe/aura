@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import type { FeedPost } from "@/features/feed/types";
 import { usePersonalizedFeed } from "@/features/feed/hooks/usePersonalizedFeed";
 import { PersonalizedToggle } from "@/features/personalization/components/PersonalizedToggle";
@@ -19,6 +21,14 @@ export function FeedView({ initialPosts, initialExpandedId }: FeedViewProps) {
     <section className={styles.feedContainer}>
       <div className={styles.feedControls}>
         <div className={styles.feedIntro}>
+          <Image
+            src="/value-icon.png"
+            alt="Valeu mark"
+            width={56}
+            height={56}
+            className={styles.feedIcon}
+            priority
+          />
           <div>
             <h2 className={styles.feedTitle}>Discovery Feed</h2>
             <p className={styles.feedSubtitle}>

@@ -26,7 +26,7 @@ function resolveChain(chainId: number): Chain {
     nativeCurrency: sepolia.nativeCurrency,
     rpcUrls: {
       default: { http: sepolia.rpcUrls.default.http },
-      public: { http: sepolia.rpcUrls.public.http }
+      public: { http: sepolia.rpcUrls.default.http }
     }
   });
 }

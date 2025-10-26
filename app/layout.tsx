@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import "./globals.css";
 
 export const metadata = {
@@ -15,12 +17,13 @@ export default function RootLayout({
       <body>
         <div className="app-shell">
           <header className="app-header">
-            <img
+            <Image
               src="/value-icon.png"
               alt="Valeu mark"
               className="app-logo"
               width={66}
               height={66}
+              priority
             />
           </header>
           <main className="app-content">{children}</main>
