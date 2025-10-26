@@ -15,10 +15,13 @@ export default function RootLayout({
       <body>
         <div className="app-shell">
           <header className="app-header">
-            <div className="app-title">
-              <h1>Valeu Curator</h1>
-              <p>Explore prototype posts from Valeu and feel the value loop—no blockchain required.</p>
-            </div>
+            <img
+              src="/value-icon.png"
+              alt="Valeu mark"
+              className="app-logo"
+              width={66}
+              height={66}
+            />
           </header>
           <main className="app-content">{children}</main>
         </div>

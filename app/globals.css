@@ -57,6 +57,13 @@ a {
   gap: 16px;
 }
 
+.app-logo {
+  width: 66px;
+  height: 66px;
+  display: block;
+  filter: drop-shadow(0 18px 32px rgba(8, 10, 18, 0.45));
+}
+
 .app-title {
   display: flex;
   flex-direction: column;

@@ -18,6 +18,20 @@
   box-shadow: 0 28px 52px rgba(7, 8, 14, 0.4);
 }
 
+.feedIntro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.feedIcon {
+  display: block;
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 20px 32px rgba(8, 10, 18, 0.4));
+}
+
 .feedTitle {
   margin: 0;
   font-size: clamp(1.45rem, 1.3rem + 0.5vw, 1.85rem);

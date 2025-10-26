@@ -18,13 +18,15 @@ export function FeedView({ initialPosts, initialExpandedId }: FeedViewProps) {
   return (
     <section className={styles.feedContainer}>
       <div className={styles.feedControls}>
-        <div>
-          <h2 className={styles.feedTitle}>Discovery Feed</h2>
-          <p className={styles.feedSubtitle}>
-            Live posts pulled from the Valeu post contract on Sepolia. Expand any
-            post to read it inline and simulate a value contribution in USD (we
-            handle the rough ETH conversion locally).
-          </p>
+        <div className={styles.feedIntro}>
+          <div>
+            <h2 className={styles.feedTitle}>Discovery Feed</h2>
+            <p className={styles.feedSubtitle}>
+              Live posts pulled from the Valeu post contract on Sepolia. Expand
+              any post to read it inline and simulate a value contribution in USD
+              (we handle the rough ETH conversion locally).
+            </p>
+          </div>
         </div>
         <PersonalizedToggle
           isEnabled={isPersonalized}
