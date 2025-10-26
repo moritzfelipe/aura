@@ -1,7 +1,7 @@
 {
-  "name": "Aura",
+  "name": "valeu",
   "version": "0.1.0",
-  "description": "Communication protocol product mock (Phase 1)",
+  "description": "Valeu communication protocol product mock (Phase 1)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

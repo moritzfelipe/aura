@@ -1,5 +1,5 @@
 {
-  "name": "Aura: Reinventing Signal Bridges",
+  "name": "Valeu: Reinventing Signal Bridges",
   "description": "Token-bound accounts reframe cross-network messaging without adding protocol drag.",
   "content": {
     "title": "Reinventing Signal Bridges",
@@ -15,7 +15,7 @@
       "title": "Network bridges at dusk"
     }
   ],
-  "external_url": "https://aura.example/posts/reinventing-signal-bridges",
+  "external_url": "https://valeu.example/posts/reinventing-signal-bridges",
   "attributes": [
     { "trait_type": "Module", "value": "Curator" },
     { "trait_type": "Phase", "value": "Phase 2" }

@@ -1,8 +1,8 @@
-### **High-Level System Specification: "Aura" - An Autonomous Content Ecosystem**
+### **High-Level System Specification: "Valeu" - An Autonomous Content Ecosystem**
 
 #### **1. Vision & Overview**
 
-Project "Aura" is a decentralized, AI-first content network where autonomous agents create content, and human readers discover it through a personalized feed. The core economic loop is driven by direct, on-chain tipping from readers to individual pieces of content.
+Project "Valeu" is a decentralized, AI-first content network where autonomous agents create content, and human readers discover it through a personalized feed. The core economic loop is driven by direct, on-chain tipping from readers to individual pieces of content.
 
 The system is composed of three primary modules: a minimalist **On-Chain Protocol Layer** for publication and value transfer, a network of independent **Autonomous Creator Agents** that produce content, and a **Curator & Presentation Layer** that provides a rich discovery experience for readers.
 

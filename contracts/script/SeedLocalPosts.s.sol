@@ -22,28 +22,28 @@ interface IERC6551Registry {
  *
  * Environment:
  * - PRIVATE_KEY (uint) – broadcaster key.
- * - AURA_POST_ADDRESS (address) – target AuraPost contract.
- * - AURA_IPFS_URI (string) – tokenURI for the new post (ipfs://CID recommended).
- * - AURA_POST_SAMPLE_HASH (bytes32) – keccak256 hash of the JSON pointed to by the URI.
- * - AURA_ERC6551_REGISTRY (address, optional) – registry used to create token-bound accounts.
- * - AURA_ACCOUNT_IMPLEMENTATION (address, optional) – ERC-6551 implementation cloned for each post.
- * - AURA_CREATE_TOKEN_ACCOUNT (bool, optional) – set to "false" to skip ERC-6551 account creation (default true).
+ * - VALEU_POST_ADDRESS (address) – target AuraPost contract.
+ * - VALEU_IPFS_URI (string) – tokenURI for the new post (ipfs://CID recommended).
+ * - VALEU_POST_SAMPLE_HASH (bytes32) – keccak256 hash of the JSON pointed to by the URI.
+ * - VALEU_ERC6551_REGISTRY (address, optional) – registry used to create token-bound accounts.
+ * - VALEU_ACCOUNT_IMPLEMENTATION (address, optional) – ERC-6551 implementation cloned for each post.
+ * - VALEU_CREATE_TOKEN_ACCOUNT (bool, optional) – set to "false" to skip ERC-6551 account creation (default true).
  */
 contract SeedLocalPostsScript is Script {
     function run() external {
         uint256 broadcasterKey = vm.envUint("PRIVATE_KEY");
-        address auraPostAddress = vm.envAddress("AURA_POST_ADDRESS");
-        string memory tokenURI = vm.envString("AURA_IPFS_URI");
-        bytes32 contentHash = vm.envBytes32("AURA_POST_SAMPLE_HASH");
-        address registry = vm.envOr("AURA_ERC6551_REGISTRY", address(0));
-        address implementation = vm.envOr("AURA_ACCOUNT_IMPLEMENTATION", address(0));
-        bool createAccount = vm.envOr("AURA_CREATE_TOKEN_ACCOUNT", true);
+        address auraPostAddress = vm.envAddress("VALEU_POST_ADDRESS");
+        string memory tokenURI = vm.envString("VALEU_IPFS_URI");
+        bytes32 contentHash = vm.envBytes32("VALEU_POST_SAMPLE_HASH");
+        address registry = vm.envOr("VALEU_ERC6551_REGISTRY", address(0));
+        address implementation = vm.envOr("VALEU_ACCOUNT_IMPLEMENTATION", address(0));
+        bool createAccount = vm.envOr("VALEU_CREATE_TOKEN_ACCOUNT", true);
 
         vm.startBroadcast(broadcasterKey);
         uint256 tokenId = AuraPost(auraPostAddress).publish(tokenURI, contentHash);
         vm.stopBroadcast();
 
-        console2.log("Published sample post", tokenId, "to AuraPost at", auraPostAddress);
+        console2.log("Published sample post", tokenId, "to the Valeu contract at", auraPostAddress);
 
         if (createAccount && registry != address(0) && implementation != address(0)) {
             uint256 salt = tokenId;
@@ -68,10 +68,10 @@ contract SeedLocalPostsScript is Script {
             }
         } else if (createAccount) {
             console2.log(
-                "Skipping ERC-6551 account creation. Provide both AURA_ERC6551_REGISTRY and AURA_ACCOUNT_IMPLEMENTATION."
+                "Skipping ERC-6551 account creation. Provide both VALEU_ERC6551_REGISTRY and VALEU_ACCOUNT_IMPLEMENTATION."
             );
         } else {
-            console2.log("Skipping ERC-6551 account creation (AURA_CREATE_TOKEN_ACCOUNT=false).");
+            console2.log("Skipping ERC-6551 account creation (VALEU_CREATE_TOKEN_ACCOUNT=false).");
         }
     }
 }

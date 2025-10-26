@@ -6,12 +6,12 @@ import {AuraPost} from "../aura-post/AuraPost.sol";
 
 /**
  * @title DeployAuraPostScript
- * @notice Deploys the AuraPost contract and optionally mints a single sample post.
+ * @notice Deploys the AuraPost contract (Valeu publisher) and optionally mints a single sample post.
  *
  * Environment:
  * - PRIVATE_KEY (uint) required for broadcasting.
- * - AURA_POST_SAMPLE_URI (string, optional) tokenURI to mint right after deployment.
- * - AURA_POST_SAMPLE_HASH (bytes32, optional) keccak256 hash associated with the sample URI.
+ * - VALEU_POST_SAMPLE_URI (string, optional) tokenURI to mint right after deployment.
+ * - VALEU_POST_SAMPLE_HASH (bytes32, optional) keccak256 hash associated with the sample URI.
  */
 contract DeployAuraPostScript is Script {
     function run() external {
@@ -21,10 +21,10 @@ contract DeployAuraPostScript is Script {
         AuraPost auraPost = new AuraPost();
         vm.stopBroadcast();
 
-        console2.log("AuraPost deployed at", address(auraPost));
+        console2.log("Valeu post contract deployed at", address(auraPost));
 
-        string memory sampleURI = vm.envOr("AURA_POST_SAMPLE_URI", string(""));
-        bytes32 sampleHash = vm.envOr("AURA_POST_SAMPLE_HASH", bytes32(0));
+        string memory sampleURI = vm.envOr("VALEU_POST_SAMPLE_URI", string(""));
+        bytes32 sampleHash = vm.envOr("VALEU_POST_SAMPLE_HASH", bytes32(0));
 
         if (bytes(sampleURI).length > 0 && sampleHash != bytes32(0)) {
             vm.startBroadcast(deployerKey);

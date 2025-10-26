@@ -6,15 +6,15 @@ import {AuraPost} from "../aura-post/AuraPost.sol";
 
 /**
  * Fork-based integration checks against a live AuraPost deployment.
- * Set both AURA_SEPOLIA_RPC_URL and AURA_POST_ADDRESS to enable.
+ * Set both VALEU_SEPOLIA_RPC_URL and VALEU_POST_ADDRESS to enable.
  */
 contract AuraPostSepoliaForkTest is Test {
     function testTotalSupplyMatchesOnchainContract() public {
-        string memory rpcUrl = vm.envOr("AURA_SEPOLIA_RPC_URL", string(""));
-        address auraAddress = vm.envOr("AURA_POST_ADDRESS", address(0));
+        string memory rpcUrl = vm.envOr("VALEU_SEPOLIA_RPC_URL", string(""));
+        address auraAddress = vm.envOr("VALEU_POST_ADDRESS", address(0));
 
         if (bytes(rpcUrl).length == 0 || auraAddress == address(0)) {
-            emit log("Skipping Sepolia fork test. Provide AURA_SEPOLIA_RPC_URL and AURA_POST_ADDRESS.");
+            emit log("Skipping Sepolia fork test. Provide VALEU_SEPOLIA_RPC_URL and VALEU_POST_ADDRESS.");
             return;
         }
 

@@ -1,4 +1,4 @@
-export const auraPostAbi = [
+export const valeuPostAbi = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",

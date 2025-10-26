@@ -1,9 +1,9 @@
 import { createPublicClient, defineChain, http, type PublicClient } from "viem";
 import { sepolia } from "viem/chains";
-import { auraPostAbi } from "@/features/feed/data/auraPostAbi";
+import { valeuPostAbi } from "@/features/feed/data/valeuPostAbi";
 import type { FeedPost } from "@/features/feed/types";
 
-type AuraMetadata = {
+type ValeuMetadata = {
   name?: string;
   description?: string;
   external_url?: string;
@@ -24,26 +24,26 @@ type AuraMetadata = {
 const DEFAULT_CHAIN_ID = 11155111; // Sepolia
 
 function resolveConfig() {
-  const rpcUrl = process.env.AURA_RPC_URL;
-  const address = process.env.AURA_POST_ADDRESS;
-  const registry = process.env.AURA_ERC6551_REGISTRY;
-  const accountImplementation = process.env.AURA_ACCOUNT_IMPLEMENTATION;
-  const chainId = process.env.AURA_CHAIN_ID ? Number(process.env.AURA_CHAIN_ID) : DEFAULT_CHAIN_ID;
+  const rpcUrl = process.env.VALEU_RPC_URL;
+  const address = process.env.VALEU_POST_ADDRESS;
+  const registry = process.env.VALEU_ERC6551_REGISTRY;
+  const accountImplementation = process.env.VALEU_ACCOUNT_IMPLEMENTATION;
+  const chainId = process.env.VALEU_CHAIN_ID ? Number(process.env.VALEU_CHAIN_ID) : DEFAULT_CHAIN_ID;
 
   if (!rpcUrl) {
-    throw new Error("AURA_RPC_URL is not defined");
+    throw new Error("VALEU_RPC_URL is not defined");
   }
 
   if (!address) {
-    throw new Error("AURA_POST_ADDRESS is not defined");
+    throw new Error("VALEU_POST_ADDRESS is not defined");
   }
 
   if (!registry) {
-    throw new Error("AURA_ERC6551_REGISTRY is not defined");
+    throw new Error("VALEU_ERC6551_REGISTRY is not defined");
   }
 
   if (!accountImplementation) {
-    throw new Error("AURA_ACCOUNT_IMPLEMENTATION is not defined");
+    throw new Error("VALEU_ACCOUNT_IMPLEMENTATION is not defined");
   }
 
   return {
@@ -79,13 +79,13 @@ function createClient(rpcUrl: string, chainId: number): PublicClient {
 function resolveGatewayUri(uri: string) {
   if (uri.startsWith("ipfs://")) {
     const cid = uri.replace("ipfs://", "");
-    const gateway = process.env.AURA_IPFS_GATEWAY || "https://ipfs.io/ipfs/";
+    const gateway = process.env.VALEU_IPFS_GATEWAY || "https://ipfs.io/ipfs/";
     return `${gateway}${cid}`;
   }
   return uri;
 }
 
-async function fetchMetadata(tokenUri: string): Promise<AuraMetadata | null> {
+async function fetchMetadata(tokenUri: string): Promise<ValeuMetadata | null> {
   if (!tokenUri) return null;
 
   const resolved = resolveGatewayUri(tokenUri);
@@ -98,7 +98,7 @@ async function fetchMetadata(tokenUri: string): Promise<AuraMetadata | null> {
   }
 
   try {
-    return (await response.json()) as AuraMetadata;
+    return (await response.json()) as ValeuMetadata;
   } catch (error) {
     console.warn(`Failed to parse metadata from ${resolved}`, error);
     return null;
@@ -127,19 +127,19 @@ function normalizePost(params: {
   tokenUri: string;
   contentHash: `0x${string}`;
   tbaAddress: `0x${string}`;
-  metadata: AuraMetadata | null;
+  metadata: ValeuMetadata | null;
 }): FeedPost {
   const { tokenId, owner, tokenUri, contentHash, tbaAddress, metadata } = params;
 
   const title =
     metadata?.content?.title ??
     metadata?.name ??
-    `Aura Post #${tokenId.toString()}`;
+    `Valeu Post #${tokenId.toString()}`;
 
   const summary =
     metadata?.content?.summary ??
     metadata?.description ??
-    "Published via AuraPost.";
+    "Published via Valeu.";
 
   const body =
     metadata?.content?.body ??
@@ -183,7 +183,7 @@ function normalizePost(params: {
   };
 }
 
-export async function getAuraPosts(): Promise<FeedPost[]> {
+export async function getValeuPosts(): Promise<FeedPost[]> {
   const {
     rpcUrl,
     postAddress,
@@ -195,7 +195,7 @@ export async function getAuraPosts(): Promise<FeedPost[]> {
 
   const totalSupply = await client.readContract({
     address: postAddress,
-    abi: auraPostAbi,
+    abi: valeuPostAbi,
     functionName: "totalSupply"
   }) as bigint;
 
@@ -210,19 +210,19 @@ export async function getAuraPosts(): Promise<FeedPost[]> {
       const [owner, tokenUri, contentHash] = await Promise.all([
         client.readContract({
           address: postAddress,
-          abi: auraPostAbi,
+          abi: valeuPostAbi,
           functionName: "ownerOf",
           args: [tokenId]
         }) as Promise<`0x${string}`>,
         client.readContract({
           address: postAddress,
-          abi: auraPostAbi,
+          abi: valeuPostAbi,
           functionName: "tokenURI",
           args: [tokenId]
         }) as Promise<string>,
         client.readContract({
           address: postAddress,
-          abi: auraPostAbi,
+          abi: valeuPostAbi,
           functionName: "contentHashOf",
           args: [tokenId]
         }) as Promise<`0x${string}`>

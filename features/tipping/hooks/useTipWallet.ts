@@ -32,7 +32,7 @@ function resolveChain(chainId: number): Chain {
 }
 
 const targetChainId = Number.parseInt(
-  process.env.NEXT_PUBLIC_AURA_CHAIN_ID ?? `${DEFAULT_CHAIN_ID}`,
+  process.env.NEXT_PUBLIC_VALEU_CHAIN_ID ?? `${DEFAULT_CHAIN_ID}`,
   10
 );
 const targetChain = resolveChain(

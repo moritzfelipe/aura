@@ -4,7 +4,7 @@ The post detail feature powers the `/post/[id]` route. It now reuses the same in
 
 ## Structure
 
-- `app/post/[id]/page.tsx` – Server component that loads Aura posts via `getAuraPosts()` and renders the shared `FeedView` with the requested `tokenId` pre-expanded.
+- `app/post/[id]/page.tsx` – Server component that loads Valeu posts via `getValeuPosts()` and renders the shared `FeedView` with the requested `tokenId` pre-expanded.
 - Shared UI and tipping interactions live alongside the feed feature (`features/feed/components/PostList.tsx`, `TipButton.tsx`).
 
 ## Behaviour

@@ -1,6 +1,6 @@
-# AuraPost Contract
+# Valeu Post Contract (AuraPost.sol)
 
-Minimal ERC-721 used for Phase 2 of the roadmap. Any address can call `publish` to mint a post NFT to itself. The contract stores a content hash alongside the token URI so the frontend can verify IPFS payloads.
+Minimal ERC-721 used for Phase 2 of the roadmap. Any address can call `publish` to mint a post NFT to itself. The contract stores a content hash alongside the token URI so the Valeu frontend can verify IPFS payloads.
 
 ## Key Functions
 
@@ -40,8 +40,8 @@ Use `contracts/aura-post/examples/sample-post.json` as a starting point for the 
 Expose the contract address and RPC URL through environment variables:
 
 ```
-AURA_RPC_URL=https://sepolia.infura.io/v3/<key>
-AURA_POST_ADDRESS=0xYourDeployedContract
+VALEU_RPC_URL=https://sepolia.infura.io/v3/<key>
+VALEU_POST_ADDRESS=0xYourDeployedContract
 ```
 
 The Next.js app will fetch posts by looping from `1` to `totalSupply`, calling `tokenURI`/`contentHashOf`, and dereferencing the IPFS metadata. Tip functionality remains local until Phase 3.
@@ -50,5 +50,5 @@ The Next.js app will fetch posts by looping from `1` to `totalSupply`, calling `
 
 - Run `forge test --match-contract AuraPostTest` for focused checks on publish flows, sequential IDs, and hash integrity.
 - `foundry.toml` is configured to consume `node_modules/@openzeppelin/contracts`; install `forge-std` once with `forge install foundry-rs/forge-std`.
-- `DeployAuraPost.s.sol` broadcasts a new contract; supply `PRIVATE_KEY` and `AURA_POST_SAMPLE_*` env vars to mint a demo post immediately after deployment.
+- `DeployAuraPost.s.sol` broadcasts a new contract; supply `PRIVATE_KEY` and `VALEU_POST_SAMPLE_*` env vars to mint a demo post immediately after deployment.
 - Use `SeedLocalPosts.s.sol` to mint additional posts into an existing deployment when exercising the curator UI against Anvil or Sepolia.

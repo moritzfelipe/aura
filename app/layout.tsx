@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Aura Feed Mock",
-  description: "Phase 1 mock curator and presentation layer for the Aura communication protocol."
+  title: "Valeu Feed Mock",
+  description: "Phase 1 mock curator and presentation layer for the Valeu communication protocol."
 };
 
 export default function RootLayout({
@@ -16,8 +16,8 @@ export default function RootLayout({
         <div className="app-shell">
           <header className="app-header">
             <div className="app-title">
-              <h1>Aura Curator</h1>
-              <p>Explore prototype posts and feel the tipping loop—no blockchain required.</p>
+              <h1>Valeu Curator</h1>
+              <p>Explore prototype posts from Valeu and feel the tipping loop—no blockchain required.</p>
             </div>
           </header>
           <main className="app-content">{children}</main>

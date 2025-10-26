@@ -31,7 +31,7 @@ interface IAuraPostExecutable {
 
 /**
  * @title AuraPostAccount
- * @notice Minimal ERC-6551 account implementation for Aura posts.
+ * @notice Minimal ERC-6551 account implementation for Valeu posts.
  * @dev Based on the reference ERC-6551 simple account. Stores the bound token
  *      coordinates in the contract bytecode footer, allowing the registry to
  *      deterministically derive the owner each time.

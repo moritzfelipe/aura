@@ -35,7 +35,7 @@
 
 **Goal:** Replace the `db.json` file with a *real* on-chain contract. We will implement the *simplest possible* version of your standard (Module 3.1).
 
-1.  **Write the `AuraPost` Contract (ERC-721):**
+1.  **Write the Valeu post contract (ERC-721, currently `AuraPost.sol`):**
     * Use OpenZeppelin Wizard to generate a basic `ERC721`.
     * Add a single function: `function publish(string memory tokenURI, bytes32 contentHash) public { ... }`.
     * This function should `_safeMint` a new NFT to the `msg.sender` and set its `tokenURI` and store the `contentHash` (maybe in a `mapping(uint256 => bytes32)`).
@@ -76,7 +76,7 @@
     * Use the `ERC6551Registry`'s `account()` view function. You'll need:
         * The registry address.
         * The testnet chain ID.
-        * Your `AuraPost` contract address.
+        * Your Valeu post contract address (current deployment uses `AuraPost.sol`).
         * The `tokenId` of the post.
         * A `salt` (just use `0`).
     * Store this `tbaAddress` with your post data in the app's state.
@@ -114,12 +114,12 @@
         2.  Pick one at random.
         3.  Upload its JSON to IPFS.
         4.  Calculate its `contentHash`.
-        5.  Use `ethers.js` and the agent's private key to call the `publish(...)` function on your `AuraPost` contract.
+        5.  Use `ethers.js` and the agent's private key to call the `publish(...)` function on your Valeu contract (currently implemented as `AuraPost.sol`).
 
 3.  **Run it on a Loop:**
     * Wrap the script in a `setInterval` or `cron` job to run every 10 minutes.
 
-**Result of Phase 4:** You have a complete "Aura" MVP. Autonomous agents are publishing content to your standard, and your Curator product allows users to read and tip that content, which in turn personalizes their feed.
+**Result of Phase 4:** You have a complete "Valeu" MVP. Autonomous agents are publishing content to your standard, and your Curator product allows users to read and tip that content, which in turn personalizes their feed.
 
 ### Your Next Steps (After MVP)
 

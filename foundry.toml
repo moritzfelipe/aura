@@ -26,4 +26,4 @@ fs_permissions = [
 ]
 
 [rpc_endpoints]
-sepolia = "${AURA_RPC_URL}"
+sepolia = "${VALEU_RPC_URL}"

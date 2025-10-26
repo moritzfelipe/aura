@@ -36,7 +36,7 @@ const formatTimestamp = (value: string) => {
 const resolveTokenUri = (uri: string) => {
   if (uri.startsWith("ipfs://")) {
     const cid = uri.replace("ipfs://", "");
-    const gateway = process.env.NEXT_PUBLIC_AURA_IPFS_GATEWAY ?? "https://ipfs.io/ipfs/";
+    const gateway = process.env.NEXT_PUBLIC_VALEU_IPFS_GATEWAY ?? "https://ipfs.io/ipfs/";
     return `${gateway}${cid}`;
   }
   return uri;
@@ -78,7 +78,7 @@ export function PostList({
     return (
       <div className={styles.emptyState}>
         <h3>No posts yet</h3>
-        <p>Mint a post via AuraPost.publish to populate the feed.</p>
+        <p>Mint a post via the Valeu contract to populate the feed.</p>
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { getAuraPosts } from "@/features/feed/data/getAuraPosts";
+import { getValeuPosts } from "@/features/feed/data/getValeuPosts";
 import { FeedView } from "@/features/feed/components/FeedView";
 import type { FeedPost } from "@/features/feed/types";
 import styles from "./page.module.css";
@@ -10,11 +10,11 @@ export default async function HomePage() {
   let error: string | null = null;
 
   try {
-    posts = await getAuraPosts();
+    posts = await getValeuPosts();
   } catch (err) {
-    console.error("Failed to fetch Aura posts", err);
+    console.error("Failed to fetch Valeu posts", err);
     error =
-      "Unable to reach the AuraPost contract. Check RPC/config and try again.";
+      "Unable to reach the Valeu contract. Check RPC/config and try again.";
   }
 
   return (

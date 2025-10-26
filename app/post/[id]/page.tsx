@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getAuraPosts } from "@/features/feed/data/getAuraPosts";
+import { getValeuPosts } from "@/features/feed/data/getValeuPosts";
 import { FeedView } from "@/features/feed/components/FeedView";
 import type { FeedPost } from "@/features/feed/types";
 
@@ -13,7 +13,7 @@ export default async function PostPage({ params }: { params: PostPageParams }) {
   let posts: FeedPost[] = [];
 
   try {
-    posts = await getAuraPosts();
+    posts = await getValeuPosts();
   } catch (error) {
     console.error("Failed to load post", error);
     notFound();

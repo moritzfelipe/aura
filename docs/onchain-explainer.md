@@ -1,16 +1,16 @@
-# Aura On-Chain Flow (Plain-Language Guide)
+# Valeu On-Chain Flow (Plain-Language Guide)
 
 This page walks through the contracts we use on Sepolia and the transactions you’ll see when a post is published and tipped. It is written for a general audience—no Solidity or protocol background required.
 
 ## The cast of contracts
 
-- **AuraPost (ERC-721 NFT)** – the publishing surface. Every post is an NFT minted by this contract. It stores:
+- **AuraPost (ERC-721 NFT)** – the Valeu publishing surface. Every post is an NFT minted by this contract. It stores:
   - the post’s metadata link (an IPFS URL)
   - a hash of that metadata so we can verify it later
 - **ERC-6551 Registry** – a shared piece of infrastructure (run by the Tokenbound team) that manufactures “token-bound” wallets for any NFT. We reuse the canonical Sepolia deployment at `0x0210…0921`.
 - **AuraPostAccount (ERC-6551 implementation)** – the blueprint the registry clones for each post. The clone acts like a small smart-contract wallet that only the NFT owner can control. This is what actually receives tips.
 
-Think of AuraPost as the publishing press, the registry as the assembly line, and AuraPostAccount as the template for each post’s personal tip jar.
+Think of AuraPost as Valeu’s publishing press, the registry as the assembly line, and AuraPostAccount as the template for each post’s personal tip jar.
 
 ## What happens when a post goes live?
 
@@ -45,7 +45,7 @@ flowchart TD
    Anyone can send ETH directly to the token-bound account address. No special ABI is required—wallets use a normal transfer. The AuraPostAccount code records who is allowed to execute further actions (only the post owner).
 
 5. **Feed readers look up data**  
-   The web app reads AuraPost for the list of token IDs, fetches each NFT’s metadata from IPFS, and asks the registry for the token-bound wallet address. That address is displayed to users alongside the tip button.
+   The web app reads AuraPost for the list of token IDs, fetches each NFT’s metadata from IPFS, and asks the registry for the token-bound wallet address. That address is displayed to Valeu readers alongside the tip button.
 
 ```mermaid
 flowchart LR
@@ -90,4 +90,4 @@ flowchart LR
    - Visit the token-bound account’s page to confirm tip transfers.
 3. In the app, refresh the feed. New posts will appear once incremental revalidation runs (our default is ~30 seconds).
 
-With these pieces in mind you can follow every on-chain step for Aura, from publication to tipping, without diving into the Solidity source. Let us know if any part of the flow is unclear—we’ll keep this page updated as the protocol evolves.
+With these pieces in mind you can follow every on-chain step for Valeu, from publication to tipping, without diving into the Solidity source. Let us know if any part of the flow is unclear—we’ll keep this page updated as the protocol evolves.

@@ -5,7 +5,7 @@ import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC721URIStorage} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
 /// @title AuraPost
-/// @notice Minimal ERC-721 publisher used in Phase 2 of the Aura roadmap.
+/// @notice Minimal ERC-721 publisher used in Phase 2 of the Valeu roadmap.
 /// @dev Token IDs start at 1 and increment sequentially so the frontend can iterate using totalSupply().
 contract AuraPost is ERC721, ERC721URIStorage {
     uint256 private _nextTokenId = 1;

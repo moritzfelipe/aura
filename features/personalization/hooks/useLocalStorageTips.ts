@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { PersonalizedState, PersonalizedTip } from "@/features/feed/types";
 
-const STORAGE_KEY = "aura-personalization-v2";
+const STORAGE_KEY = "valeu-personalization-v2";
+const LEGACY_STORAGE_KEY_V2 = "aura-personalization-v2";
+const LEGACY_STORAGE_KEY_V1 = "aura-personalization-v1";
 
 const defaultState: PersonalizedState = {
   tips: [],
@@ -50,33 +52,11 @@ function migrateState(raw: unknown): PersonalizedState {
   return defaultState;
 }
 
-function hydrateState(): PersonalizedState {
-  if (typeof window === "undefined") {
-    return defaultState;
-  }
-
+function parseStoredState(raw: string): PersonalizedState | null {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      const legacyRaw = window.localStorage.getItem("aura-personalization-v1");
-      if (!legacyRaw) {
-        return defaultState;
-      }
-
-      const legacyParsed = JSON.parse(legacyRaw) as unknown;
-      const migrated = migrateState(legacyParsed);
-      persistState(migrated);
-      try {
-        window.localStorage.removeItem("aura-personalization-v1");
-      } catch {
-        // ignore removal errors
-      }
-      return migrated;
-    }
-
-    const parsed = JSON.parse(raw) as PersonalizedState | Record<string, unknown>;
+    const parsed = JSON.parse(raw) as PersonalizedState | Record<string, unknown> | null;
     if (!parsed) {
-      return defaultState;
+      return null;
     }
 
     if ("tips" in parsed && Array.isArray(parsed.tips)) {
@@ -103,6 +83,57 @@ function hydrateState(): PersonalizedState {
     }
 
     return migrateState(parsed);
+  } catch (error) {
+    console.warn("Failed to parse personalization data", error);
+    return null;
+  }
+}
+
+function hydrateState(): PersonalizedState {
+  if (typeof window === "undefined") {
+    return defaultState;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = parseStoredState(raw);
+      return parsed ?? defaultState;
+    }
+
+    const legacyV2Raw = window.localStorage.getItem(LEGACY_STORAGE_KEY_V2);
+    if (legacyV2Raw) {
+      const parsed = parseStoredState(legacyV2Raw);
+      if (parsed) {
+        persistState(parsed);
+        try {
+          window.localStorage.removeItem(LEGACY_STORAGE_KEY_V2);
+        } catch {
+          // ignore removal errors
+        }
+        return parsed;
+      }
+    }
+
+    const legacyV1Raw = window.localStorage.getItem(LEGACY_STORAGE_KEY_V1);
+    if (!legacyV1Raw) {
+      return defaultState;
+    }
+
+    try {
+      const legacyParsed = JSON.parse(legacyV1Raw) as unknown;
+      const migrated = migrateState(legacyParsed);
+      persistState(migrated);
+      try {
+        window.localStorage.removeItem(LEGACY_STORAGE_KEY_V1);
+      } catch {
+        // ignore removal errors
+      }
+      return migrated;
+    } catch (error) {
+      console.warn("Failed to parse legacy personalization data", error);
+      return defaultState;
+    }
   } catch (error) {
     console.warn("Failed to read personalization data", error);
     return defaultState;
