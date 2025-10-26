@@ -2,8 +2,8 @@
 pragma solidity ^0.8.27;
 
 import {Test} from "forge-std/Test.sol";
-import {AuraPost} from "../aura-post/AuraPost.sol";
-import {AuraPostAccount} from "../aura-account/AuraPostAccount.sol";
+import {ValeuPost} from "../valeu-post/ValeuPost.sol";
+import {ValeuPostAccount} from "../valeu-account/ValeuPostAccount.sol";
 
 contract AccountBootstrapper {
     constructor(bytes memory runtime) {
@@ -13,27 +13,27 @@ contract AccountBootstrapper {
     }
 }
 
-contract AuraPostAccountIntegrationTest is Test {
-    AuraPost internal auraPost;
+contract ValeuPostAccountIntegrationTest is Test {
+    ValeuPost internal valeuPost;
     address internal accountImplementation;
 
     function setUp() public {
-        auraPost = new AuraPost();
-        accountImplementation = address(new AuraPostAccount());
+        valeuPost = new ValeuPost();
+        accountImplementation = address(new ValeuPostAccount());
     }
 
     function testCreateAccountAndReceiveTip() public {
         address publisher = makeAddr("publisher");
         vm.prank(publisher);
-        uint256 tokenId = auraPost.publish("ipfs://integration", bytes32(uint256(12345)));
+        uint256 tokenId = valeuPost.publish("ipfs://integration", bytes32(uint256(12345)));
 
-        address account = _deployAccount(bytes32(tokenId), address(auraPost), tokenId);
+        address account = _deployAccount(bytes32(tokenId), address(valeuPost), tokenId);
         assertGt(account.code.length, 0, "account not deployed");
 
-        AuraPostAccount boundAccount = AuraPostAccount(payable(account));
+        ValeuPostAccount boundAccount = ValeuPostAccount(payable(account));
         (uint256 recordedChainId, address recordedTokenContract, uint256 recordedTokenId) = boundAccount.token();
         assertEq(recordedChainId, block.chainid, "chainId mismatch in account footer");
-        assertEq(recordedTokenContract, address(auraPost), "token contract mismatch in account footer");
+        assertEq(recordedTokenContract, address(valeuPost), "token contract mismatch in account footer");
         assertEq(recordedTokenId, tokenId, "tokenId mismatch in account footer");
         assertEq(boundAccount.owner(), publisher, "owner should resolve to token owner");
 

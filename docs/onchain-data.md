@@ -1,6 +1,6 @@
 # On-Chain Data Flow
 
-Phase 2 replaces the local JSON feed with posts pulled directly from the Valeu post contract (`AuraPost.sol`).
+Phase 2 replaces the local JSON feed with posts pulled directly from the Valeu post contract (`ValeuPost.sol`).
 
 ## Environment
 
@@ -8,9 +8,9 @@ Create a `.env.local` (or similar) with the following keys:
 
 ```
 VALEU_RPC_URL=https://sepolia.infura.io/v3/<key>
-VALEU_POST_ADDRESS=0x94FC74A46E296814fFBb1D0a43b8778f5959cDE1
+VALEU_POST_ADDRESS=0xBFd7FCbE8663D3B84D11dC9BAA6cB129c7F45249
 VALEU_CHAIN_ID=11155111
-VALEU_ACCOUNT_IMPLEMENTATION=0xEb77bDb139319529210dE051eb932c5577e63f26
+VALEU_ACCOUNT_IMPLEMENTATION=0xb004BAB97E8Bbd8a8b895A00373d37D82D668FC8
 VALEU_ERC6551_REGISTRY=0x02101dfB77FDE026414827Fdc604ddAF224F0921
 VALEU_IPFS_GATEWAY=https://ipfs.io/ipfs/
 NEXT_PUBLIC_VALEU_IPFS_GATEWAY=https://ipfs.io/ipfs/
@@ -32,8 +32,8 @@ Restart the dev server after changing any of these values.
 
 | Component | Network | Address | Block | Tx Hash | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Valeu Post (AuraPost ERC-721) | Sepolia | `0x94FC74A46E296814fFBb1D0a43b8778f5959cDE1` | `9478256` | `0xd9a080e69604f8c1213a38ff97f1b89b34439b89a5d477b937f8f11d2c802a56` | Deployed via `DeployAuraPost.s.sol`. |
-| AuraPostAccount (ERC-6551 implementation) | Sepolia | `0xEb77bDb139319529210dE051eb932c5577e63f26` | `9478363` | `0x62cadd6cd10595afdc3558db9ac387df510aeed8aa021c2e492057e54b8b0fbe` | `forge create` broadcast. |
+| ValeuPost (ERC-721) | Sepolia | `0xBFd7FCbE8663D3B84D11dC9BAA6cB129c7F45249` | `9495114` | `0x9a81afc104d0ab3346f0633c8a6030564e524d3bb4c38529fceaa4a12551496d` | Deployed via `DeployValeuPost.s.sol`. |
+| ValeuPostAccount (ERC-6551 implementation) | Sepolia | `0xb004BAB97E8Bbd8a8b895A00373d37D82D668FC8` | `9495147` | `0xde3b3b203925bfeeeec2bff558c88ba3d760eceade650430e610b02999640d3b` | `forge create` broadcast. |
 | ERC-6551 Registry | Sepolia | `0x02101dfB77FDE026414827Fdc604ddAF224F0921` | — | Canonical | Official registry deployment recycled for all posts. |
 
 Update this table whenever we redeploy so the team can keep track of live endpoints.
@@ -56,7 +56,7 @@ Tip balances can be checked with `cast balance <account> --rpc-url $VALEU_RPC_UR
 
 ## Adding New Posts
 
-1. Prepare metadata (`contracts/aura-post/examples/sample-post.json` is a template).
+1. Prepare metadata (`contracts/valeu-post/examples/sample-post.json` is a template).
 2. Upload the JSON to IPFS and capture both the CID (`tokenURI`) and its keccak256 hash (`contentHash`). Example: `ipfs://bafkreifcprjzz2d4gwux6w2yb6ofqctl4sowkkb3nfukdjn2pufslwfx4m` with hash `0x933a4a1c7193dd65aa98e1a91747bf323ab9186e6a3b9d3153d136c761bdd524`.
 3. Call `publish(tokenURI, contentHash)` in Remix using the deployed contract.
 4. The post appears in the feed once the ISR window (30 seconds by default) passes or after a manual reload while running locally.
@@ -70,10 +70,10 @@ Tip balances can be checked with `cast balance <account> --rpc-url $VALEU_RPC_UR
 ## Testing & Scripts
 
 - `forge test` executes the Solidity unit suite added under `contracts/test`. Install Foundry first and run `forge install foundry-rs/forge-std` from the repo root to pull in the testing library.
-- Provide `VALEU_SEPOLIA_RPC_URL` (can reuse `VALEU_RPC_URL`) and `VALEU_POST_ADDRESS` to enable the Sepolia fork smoke check in `AuraPostSepoliaForkTest`.
+- Provide `VALEU_SEPOLIA_RPC_URL` (can reuse `VALEU_RPC_URL`) and `VALEU_POST_ADDRESS` to enable the Sepolia fork smoke check in `ValeuPostSepoliaForkTest`.
 - Deployment helpers live in `contracts/script`:
-  - `DeployAuraPost.s.sol` deploys a fresh contract (optionally minting a sample post when `VALEU_POST_SAMPLE_URI` and `VALEU_POST_SAMPLE_HASH` are set).
-  - `SeedLocalPosts.s.sol` mints demo content into an existing contract when supplied `VALEU_POST_ADDRESS`, `VALEU_IPFS_URI`, and `VALEU_POST_SAMPLE_HASH`.
+  - `DeployValeuPost.s.sol` deploys a fresh contract (optionally minting a sample post when `VALEU_POST_SAMPLE_URI` and `VALEU_POST_SAMPLE_HASH` are set).
+  - `SeedValeuPosts.s.sol` mints demo content into an existing contract when supplied `VALEU_POST_ADDRESS`, `VALEU_IPFS_URI`, and `VALEU_POST_SAMPLE_HASH`.
 - When seeding content, derive the hash with:
 
   ```bash

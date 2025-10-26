@@ -1,6 +1,6 @@
 # Feed Feature
 
-Phase 2 swaps the local JSON dataset for real posts minted through the Valeu post contract (`AuraPost.sol`). This directory groups the React components, hooks, and data helpers that back the `/` route.
+Phase 2 swaps the local JSON dataset for real posts minted through the Valeu post contract (`ValeuPost.sol`). This directory groups the React components, hooks, and data helpers that back the `/` route.
 
 ## Structure
 

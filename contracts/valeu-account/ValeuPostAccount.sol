@@ -6,7 +6,7 @@ import {IERC1271} from "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 
-interface IAuraPostAccount is IERC165 {
+interface IValeuPostAccount is IERC165 {
     receive() external payable;
 
     function token()
@@ -22,7 +22,7 @@ interface IAuraPostAccount is IERC165 {
         returns (bytes4 magicValue);
 }
 
-interface IAuraPostExecutable {
+interface IValeuPostExecutable {
     function execute(address to, uint256 value, bytes calldata data, uint8 operation)
         external
         payable
@@ -30,13 +30,13 @@ interface IAuraPostExecutable {
 }
 
 /**
- * @title AuraPostAccount
+ * @title ValeuPostAccount
  * @notice Minimal ERC-6551 account implementation for Valeu posts.
  * @dev Based on the reference ERC-6551 simple account. Stores the bound token
  *      coordinates in the contract bytecode footer, allowing the registry to
  *      deterministically derive the owner each time.
  */
-contract AuraPostAccount is IAuraPostAccount, IAuraPostExecutable, IERC1271 {
+contract ValeuPostAccount is IValeuPostAccount, IValeuPostExecutable, IERC1271 {
     uint256 public state;
 
     receive() external payable {}
@@ -47,8 +47,8 @@ contract AuraPostAccount is IAuraPostAccount, IAuraPostExecutable, IERC1271 {
         override
         returns (bytes memory result)
     {
-        require(_isValidSigner(msg.sender), "AuraPostAccount: invalid signer");
-        require(operation == 0, "AuraPostAccount: call only");
+        require(_isValidSigner(msg.sender), "ValeuPostAccount: invalid signer");
+        require(operation == 0, "ValeuPostAccount: call only");
 
         unchecked {
             ++state;
@@ -71,7 +71,7 @@ contract AuraPostAccount is IAuraPostAccount, IAuraPostExecutable, IERC1271 {
         returns (bytes4)
     {
         if (_isValidSigner(signer)) {
-            return IAuraPostAccount.isValidSigner.selector;
+            return IValeuPostAccount.isValidSigner.selector;
         }
         return bytes4(0);
     }
@@ -89,8 +89,8 @@ contract AuraPostAccount is IAuraPostAccount, IAuraPostExecutable, IERC1271 {
     function supportsInterface(bytes4 interfaceId) external pure override returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
-            interfaceId == type(IAuraPostAccount).interfaceId ||
-            interfaceId == type(IAuraPostExecutable).interfaceId;
+            interfaceId == type(IValeuPostAccount).interfaceId ||
+            interfaceId == type(IValeuPostExecutable).interfaceId;
     }
 
     function token() public view virtual override returns (uint256, address, uint256) {

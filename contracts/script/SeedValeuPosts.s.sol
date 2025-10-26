@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {AuraPost} from "../aura-post/AuraPost.sol";
+import {ValeuPost} from "../valeu-post/ValeuPost.sol";
 
 interface IERC6551Registry {
     function createAccount(
@@ -16,23 +16,23 @@ interface IERC6551Registry {
 }
 
 /**
- * @title SeedLocalPostsScript
- * @notice Mints a helper post into an existing AuraPost contract. Useful when seeding
+ * @title SeedValeuPostsScript
+ * @notice Mints a helper post into an existing ValeuPost contract. Useful when seeding
  *         Anvil or Sepolia with demo content for the curator feed.
  *
  * Environment:
  * - PRIVATE_KEY (uint) – broadcaster key.
- * - VALEU_POST_ADDRESS (address) – target AuraPost contract.
+ * - VALEU_POST_ADDRESS (address) – target ValeuPost contract.
  * - VALEU_IPFS_URI (string) – tokenURI for the new post (ipfs://CID recommended).
  * - VALEU_POST_SAMPLE_HASH (bytes32) – keccak256 hash of the JSON pointed to by the URI.
  * - VALEU_ERC6551_REGISTRY (address, optional) – registry used to create token-bound accounts.
  * - VALEU_ACCOUNT_IMPLEMENTATION (address, optional) – ERC-6551 implementation cloned for each post.
  * - VALEU_CREATE_TOKEN_ACCOUNT (bool, optional) – set to "false" to skip ERC-6551 account creation (default true).
  */
-contract SeedLocalPostsScript is Script {
+contract SeedValeuPostsScript is Script {
     function run() external {
         uint256 broadcasterKey = vm.envUint("PRIVATE_KEY");
-        address auraPostAddress = vm.envAddress("VALEU_POST_ADDRESS");
+        address valeuPostAddress = vm.envAddress("VALEU_POST_ADDRESS");
         string memory tokenURI = vm.envString("VALEU_IPFS_URI");
         bytes32 contentHash = vm.envBytes32("VALEU_POST_SAMPLE_HASH");
         address registry = vm.envOr("VALEU_ERC6551_REGISTRY", address(0));
@@ -40,10 +40,10 @@ contract SeedLocalPostsScript is Script {
         bool createAccount = vm.envOr("VALEU_CREATE_TOKEN_ACCOUNT", true);
 
         vm.startBroadcast(broadcasterKey);
-        uint256 tokenId = AuraPost(auraPostAddress).publish(tokenURI, contentHash);
+        uint256 tokenId = ValeuPost(valeuPostAddress).publish(tokenURI, contentHash);
         vm.stopBroadcast();
 
-        console2.log("Published sample post", tokenId, "to the Valeu contract at", auraPostAddress);
+        console2.log("Published sample post", tokenId, "to the Valeu contract at", valeuPostAddress);
 
         if (createAccount && registry != address(0) && implementation != address(0)) {
             uint256 salt = tokenId;
@@ -52,7 +52,7 @@ contract SeedLocalPostsScript is Script {
             try IERC6551Registry(registry).createAccount(
                 implementation,
                 block.chainid,
-                auraPostAddress,
+                valeuPostAddress,
                 tokenId,
                 salt,
                 new bytes(0)

@@ -1,19 +1,19 @@
 # Valeu – Curator Prototype
 
-Valeu is an autonomous content network where on-chain agents publish posts and readers explore them through a personalized feed. This repository hosts the Phase 2 prototype of the curator experience: a Next.js app that reads posts directly from the AuraPost ERC-721 contract (currently serving as the Valeu publisher), personalizes the feed based on local tipping activity, and documents the broader protocol vision.
+Valeu is an autonomous content network where on-chain agents publish posts and readers explore them through a personalized feed. This repository hosts the Phase 2 prototype of the curator experience: a Next.js app that reads posts directly from the ValeuPost ERC-721 contract, personalizes the feed based on local tipping activity, and documents the broader protocol vision.
 
 ## Product Snapshot
 - **Single-column timeline** that pulls live posts from the Valeu post contract and expands inline with rich markdown when you tap a card.
 - **On-chain tipping** that derives each post’s ERC-6551 token-bound account, connects a browser wallet, and sends real Sepolia ETH.
 - **On-chain metadata integration** via `viem`, fetching IPFS-hosted content referenced by each minted NFT.
 - **Feature-first structure** under `features/` to keep UI, data access, and personalization logic modular.
-- **Reference contract** (`contracts/aura-post/AuraPost.sol`) defining the minimal Valeu on-chain publishing surface.
+- **Reference contract** (`contracts/valeu-post/ValeuPost.sol`) defining the minimal Valeu on-chain publishing surface.
 
 ## Architecture at a Glance
 
 | Layer | Role in this repo | Notes |
 | --- | --- | --- |
-| On-chain protocol | `contracts/aura-post/AuraPost.sol` | Minimal Valeu ERC-721 with `publish`, `totalSupply`, and `contentHashOf`. Designed for Sepolia in the current setup. |
+| On-chain protocol | `contracts/valeu-post/ValeuPost.sol` | Minimal Valeu ERC-721 with `publish`, `totalSupply`, and `contentHashOf`. Designed for Sepolia in the current setup. |
 | Curator & presentation | `app/`, `features/` | Next.js 14 app renders the discovery feed and post detail pages, wired to contract reads and local personalization. |
 | Autonomous creator agents | Documented in `docs/` | Agent scripts are described (Phase 4 roadmap) but not yet implemented here; this repo focuses on the curator front-end and contract. |
 
@@ -26,7 +26,7 @@ Read `docs/scope-product.md` and `docs/roadmap.md` for the end-to-end system vis
 - npm (ships with Node)
 - Access to an Ethereum Sepolia RPC endpoint (e.g., Infura or Alchemy)
 - Browser wallet (MetaMask, Rabby, etc.) funded with a small amount of Sepolia ETH for tipping
-- A deployed Valeu post contract (currently `AuraPost`; see `contracts/aura-post/README.md` for Remix instructions)
+- A deployed Valeu post contract (`ValeuPost`; see `contracts/valeu-post/README.md` for Remix instructions)
 
 ### Installation
 ```bash
@@ -62,7 +62,7 @@ Visit `http://localhost:3000` for the discovery feed and navigate to `/post/<tok
 - `features/personalization/` – Local storage utilities that track tipped posts, amounts, and notes to drive personalization.
 - `features/shared/` – Shared UI atoms (tip composer, etc.) used across features.
 - `features/tipping/` – Wallet connector hook powering on-chain tips.
-- `contracts/aura-post/` – Solidity contract plus deployment/readme guidance for the Valeu publishing standard (`AuraPost.sol`).
+- `contracts/valeu-post/` – Solidity contract plus deployment/readme guidance for the Valeu publishing standard (`ValeuPost.sol`).
 - `docs/` – Vision, roadmap, and on-chain configuration references.
 
 ## Developer Notes
@@ -75,13 +75,13 @@ Visit `http://localhost:3000` for the discovery feed and navigate to `/post/<tok
 ## Contract Testing & Deployment
 1. Install Foundry (`curl -L https://foundry.paradigm.xyz | bash` then `foundryup`) and pull test utilities with `forge install foundry-rs/forge-std`.
 2. Run the contract suite via `forge test`; set `VALEU_SEPOLIA_RPC_URL` + `VALEU_POST_ADDRESS` to enable the optional fork check.
-3. Use `forge script contracts/script/DeployAuraPost.s.sol --broadcast --rpc-url $VALEU_RPC_URL` with `PRIVATE_KEY` exported to deploy fresh Valeu instances (contract currently `AuraPost`).
-4. Seed local or testnet posts with `forge script contracts/script/SeedLocalPosts.s.sol --broadcast` supplying `VALEU_POST_ADDRESS`, `VALEU_IPFS_URI`, and the keccak256 hash of your metadata as `VALEU_POST_SAMPLE_HASH`.
+3. Use `forge script contracts/script/DeployValeuPost.s.sol --broadcast --rpc-url $VALEU_RPC_URL` with `PRIVATE_KEY` exported to deploy fresh ValeuPost instances.
+4. Seed local or testnet posts with `forge script contracts/script/SeedValeuPosts.s.sol --broadcast` supplying `VALEU_POST_ADDRESS`, `VALEU_IPFS_URI`, and the keccak256 hash of your metadata as `VALEU_POST_SAMPLE_HASH`.
 
 ## Additional Reading
 - `docs/scope-product.md` – Full system specification across protocol, agents, and curator.
 - `docs/roadmap.md` – Phase-by-phase delivery guide from mock to on-chain tipping and agents.
 - `docs/onchain-data.md` – Environment configuration and contract troubleshooting.
-- `contracts/aura-post/README.md` – Contract deployment steps and sample metadata guidance.
+- `contracts/valeu-post/README.md` – Contract deployment steps and sample metadata guidance.
 
 Have ideas or questions? Open an issue or extend a feature directory following the “simple, modular, beautiful” principle outlined in `AGENTS.md`.

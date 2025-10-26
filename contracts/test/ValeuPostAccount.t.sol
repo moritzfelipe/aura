@@ -3,10 +3,10 @@ pragma solidity ^0.8.27;
 
 import {Test} from "forge-std/Test.sol";
 import {IERC1271} from "@openzeppelin/contracts/interfaces/IERC1271.sol";
-import {AuraPost} from "../aura-post/AuraPost.sol";
-import {AuraPostAccount} from "../aura-account/AuraPostAccount.sol";
+import {ValeuPost} from "../valeu-post/ValeuPost.sol";
+import {ValeuPostAccount} from "../valeu-account/ValeuPostAccount.sol";
 
-contract AuraPostAccountHarness is AuraPostAccount {
+contract ValeuPostAccountHarness is ValeuPostAccount {
     uint256 private _chainIdOverride;
     address private _tokenContractOverride;
     uint256 private _tokenIdOverride;
@@ -41,27 +41,27 @@ contract CallReceiver {
     }
 }
 
-contract AuraPostAccountTest is Test {
-    AuraPost internal auraPost;
-    AuraPostAccountHarness internal account;
+contract ValeuPostAccountTest is Test {
+    ValeuPost internal valeuPost;
+    ValeuPostAccountHarness internal account;
     CallReceiver internal receiver;
 
     uint256 internal ownerKey;
     uint256 internal tokenId;
 
     function setUp() public {
-        auraPost = new AuraPost();
+        valeuPost = new ValeuPost();
         receiver = new CallReceiver();
-        account = new AuraPostAccountHarness();
+        account = new ValeuPostAccountHarness();
 
         ownerKey = uint256(keccak256("owner-private-key"));
         address derivedOwner = vm.addr(ownerKey);
         vm.label(derivedOwner, "tokenOwner");
 
         vm.prank(derivedOwner);
-        tokenId = auraPost.publish("ipfs://seed", bytes32(uint256(888)));
+        tokenId = valeuPost.publish("ipfs://seed", bytes32(uint256(888)));
 
-        account.setTokenData(block.chainid, address(auraPost), tokenId);
+        account.setTokenData(block.chainid, address(valeuPost), tokenId);
         assertEq(account.owner(), derivedOwner, "owner should resolve from token");
     }
 
@@ -82,7 +82,7 @@ contract AuraPostAccountTest is Test {
 
     function testExecuteRevertsForNonOwner() public {
         vm.prank(makeAddr("intruder"));
-        vm.expectRevert(bytes("AuraPostAccount: invalid signer"));
+        vm.expectRevert(bytes("ValeuPostAccount: invalid signer"));
         account.execute(address(receiver), 0, bytes(""), 0);
         assertEq(account.state(), 0, "state should not increment");
     }
@@ -90,7 +90,7 @@ contract AuraPostAccountTest is Test {
     function testExecuteRejectsUnsupportedOperations() public {
         address derivedOwner = vm.addr(ownerKey);
         vm.prank(derivedOwner);
-        vm.expectRevert(bytes("AuraPostAccount: call only"));
+        vm.expectRevert(bytes("ValeuPostAccount: call only"));
         account.execute(address(receiver), 0, bytes(""), 1);
     }
 
@@ -102,7 +102,7 @@ contract AuraPostAccountTest is Test {
     }
 
     function testIsValidSignatureMatchesOwnerSignature() public {
-        bytes32 digest = keccak256("aura-post-account");
+        bytes32 digest = keccak256("valeu-post-account");
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(ownerKey, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
@@ -119,7 +119,7 @@ contract AuraPostAccountTest is Test {
     function testTokenReturnsBoundCoordinates() public {
         (uint256 chainId, address tokenContract, uint256 boundTokenId) = account.token();
         assertEq(chainId, block.chainid, "chainId mismatch");
-        assertEq(tokenContract, address(auraPost), "token contract mismatch");
+        assertEq(tokenContract, address(valeuPost), "token contract mismatch");
         assertEq(boundTokenId, tokenId, "tokenId mismatch");
     }
 

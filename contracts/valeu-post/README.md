@@ -1,4 +1,4 @@
-# Valeu Post Contract (AuraPost.sol)
+# Valeu Post Contract (ValeuPost.sol)
 
 Minimal ERC-721 used for Phase 2 of the roadmap. Any address can call `publish` to mint a post NFT to itself. The contract stores a content hash alongside the token URI so the Valeu frontend can verify IPFS payloads.
 
@@ -12,9 +12,9 @@ Token IDs start at 1 and increment sequentially to make client-side pagination p
 
 ## Deploying with Remix
 
-1. Paste `AuraPost.sol` into a Remix workspace (enable the OpenZeppelin dependency via NPM import).
+1. Paste `ValeuPost.sol` into a Remix workspace (enable the OpenZeppelin dependency via NPM import).
 2. Compile with Solidity `0.8.27` (enable optimizer if desired).
-3. Switch Remix to the Sepolia network and deploy `AuraPost` (no constructor arguments).
+3. Switch Remix to the Sepolia network and deploy `ValeuPost` (no constructor arguments).
 4. Call `publish(tokenURI, contentHash)` using:
    - `tokenURI`: IPFS URI (e.g. `ipfs://Qm...`).
    - `contentHash`: 32-byte keccak hash of the post JSON (`0x` prefixed).
@@ -23,14 +23,14 @@ Each successful call increments `totalSupply` and emits a `PostPublished` event.
 
 ## IPFS Metadata Template
 
-Use `contracts/aura-post/examples/sample-post.json` as a starting point for the metadata you upload to IPFS. The structure keeps richer copy under `content` while maintaining compatibility with marketplace conventions at the top level (`name`, `description`, `external_url`, `attributes`).
+Use `contracts/valeu-post/examples/sample-post.json` as a starting point for the metadata you upload to IPFS. The structure keeps richer copy under `content` while maintaining compatibility with marketplace conventions at the top level (`name`, `description`, `external_url`, `attributes`).
 
 1. Duplicate the sample file, adjust the fields (title, body markdown, media URLs, etc.).
 2. Upload the JSON verbatim to IPFS (Pinata, web3.storage, etc.). The resulting CID becomes your `tokenURI`.
 3. Compute the `contentHash` by hashing the **exact JSON bytes** you uploaded. Install `viem` once via `npm install viem`, then run:
 
    ```bash
-   node -e "import { readFileSync } from 'node:fs'; import { keccak256 } from 'viem'; const data = readFileSync('contracts/aura-post/examples/sample-post.json'); console.log(keccak256(data));"
+   node -e "import { readFileSync } from 'node:fs'; import { keccak256 } from 'viem'; const data = readFileSync('contracts/valeu-post/examples/sample-post.json'); console.log(keccak256(data));"
    ```
 
    The script prints a `0x...` value you can pass directly to `publish`.
@@ -48,7 +48,7 @@ The Next.js app will fetch posts by looping from `1` to `totalSupply`, calling `
 
 ## Foundry Tests & Scripts
 
-- Run `forge test --match-contract AuraPostTest` for focused checks on publish flows, sequential IDs, and hash integrity.
+- Run `forge test --match-contract ValeuPostTest` for focused checks on publish flows, sequential IDs, and hash integrity.
 - `foundry.toml` is configured to consume `node_modules/@openzeppelin/contracts`; install `forge-std` once with `forge install foundry-rs/forge-std`.
-- `DeployAuraPost.s.sol` broadcasts a new contract; supply `PRIVATE_KEY` and `VALEU_POST_SAMPLE_*` env vars to mint a demo post immediately after deployment.
-- Use `SeedLocalPosts.s.sol` to mint additional posts into an existing deployment when exercising the curator UI against Anvil or Sepolia.
+- `DeployValeuPost.s.sol` broadcasts a new contract; supply `PRIVATE_KEY` and `VALEU_POST_SAMPLE_*` env vars to mint a demo post immediately after deployment.
+- Use `SeedValeuPosts.s.sol` to mint additional posts into an existing deployment when exercising the curator UI against Anvil or Sepolia.
