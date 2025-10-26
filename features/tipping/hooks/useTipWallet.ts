@@ -131,7 +131,7 @@ export function useTipWallet(): TipWalletState {
       const from = accountRef.current;
 
       if (!client || !from) {
-        const message = "Connect a wallet before sending a tip.";
+        const message = "Connect a wallet before sending value.";
         setError(message);
         throw new Error(message);
       }
@@ -152,7 +152,7 @@ export function useTipWallet(): TipWalletState {
         const message =
           transactionError instanceof Error
             ? transactionError.message
-            : "Failed to send tip transaction.";
+            : "Failed to send value transaction.";
         setError(message);
         throw transactionError;
       }
@@ -194,5 +194,5 @@ async function waitForReceipt(client: WalletClient, hash: Hex) {
     await new Promise((resolve) => setTimeout(resolve, DEFAULT_POLL_INTERVAL_MS));
   }
 
-  throw new Error("Timed out waiting for tip confirmation.");
+  throw new Error("Timed out waiting for value confirmation.");
 }

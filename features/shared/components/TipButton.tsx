@@ -162,7 +162,7 @@ export function TipButton({
     const amountEth = amountUsd / USD_PER_ETH;
 
     if (amountUsd < MIN_USD_AMOUNT) {
-      setLocalError("Tip amount is too small. Try increasing it.");
+      setLocalError("Value amount is too small. Try increasing it.");
       return;
     }
 
@@ -170,12 +170,12 @@ export function TipButton({
     try {
       valueWei = parseUnits(amountEth.toFixed(18), 18);
     } catch {
-      setLocalError("Unable to parse tip amount. Try again.");
+      setLocalError("Unable to parse value amount. Try again.");
       return;
     }
 
     if (valueWei <= 0n) {
-      setLocalError("Tip amount is too small. Try increasing it.");
+      setLocalError("Value amount is too small. Try increasing it.");
       return;
     }
 
@@ -196,7 +196,7 @@ export function TipButton({
     }
 
     if (!walletAccount) {
-      setLocalError("Wallet connection is required to send a tip.");
+      setLocalError("Wallet connection is required to send value.");
       return;
     }
 
@@ -222,12 +222,12 @@ export function TipButton({
       setAmountField(formatUsd(resetAmount));
       setHasManualEdit(false);
       setLastIntensity(hasTipped ? 0.35 : 0);
-      setSuccessMessage("Tip sent!");
+      setSuccessMessage("Value sent!");
     } catch (transactionError) {
       const message =
         transactionError instanceof Error
           ? transactionError.message
-          : "Failed to send tip.";
+          : "Failed to send value.";
       setLocalError(message);
     } finally {
       setIsSubmitting(false);
@@ -390,7 +390,7 @@ export function TipButton({
 
   const displayedError = localError ?? walletError;
   const tipCountLabel = `${Math.max(totalTips, 0)} ${
-    totalTips === 1 ? "tip" : "tips"
+    totalTips === 1 ? "value" : "values"
   }`;
   const isAmountInvalid = (() => {
     if (!amountField.trim()) {
@@ -427,7 +427,7 @@ export function TipButton({
           onClick={handleTriggerClick}
           disabled={isBusy}
         >
-          Tip
+          Value
         </button>
         <div className={styles.amountField}>
           {isEditingAmount ? (
@@ -453,7 +453,7 @@ export function TipButton({
               type="button"
               className={styles.amountDisplay}
               onClick={beginManualEdit}
-              aria-label="Edit tip amount"
+              aria-label="Edit value amount"
             >
               <span className={styles.amountValue}>${displayAmount}</span>
               <span className={styles.editIcon} aria-hidden="true">
@@ -513,7 +513,7 @@ export function TipButton({
               className={`${styles.status} ${styles.statusLink}`}
               onClick={(event) => event.stopPropagation()}
             >
-              View tip ↗
+              View value ↗
             </a>
           ) : null}
         </div>

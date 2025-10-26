@@ -19,7 +19,7 @@ export function PersonalizedToggle({ isEnabled, onToggle }: PersonalizedTogglePr
       <div className={styles.labels}>
         <span className={styles.label}>Personalized</span>
         <span className={styles.helper}>
-          {isEnabled ? "Your tips guide the order" : "Chronological preview"}
+          {isEnabled ? "Your values guide the order" : "Chronological preview"}
         </span>
       </div>
     </button>
